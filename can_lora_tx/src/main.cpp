@@ -20,7 +20,7 @@ TeensyCAN<1> can_bus{};
 
 // CAN data buffers
 // Each signal is 16-bit with 10 sigs in total
-// Total data: 160 bits = 32 bytes (chars)
+// Total data: 160 bits = 20 bytes (chars)
 CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed;
 CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed;
 CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed;
@@ -119,24 +119,24 @@ void loop() {
     Serial.print(" R: "); Serial.print(rear_brake_pressure);
     Serial.println(" }");
 
-    // Initialize radio packet
-    char packet[33];
+    // Declare and initialize radio packet
+    char packet[21];
     itoa(fl_wheel_speed, packet, 16);
-    itoa(fl_brake_temperature, packet + 1, 16);
-    itoa(fr_wheel_speed, packet + 2, 16);
-    itoa(fr_brake_temperature, packet + 3, 16);
-    itoa(bl_wheel_speed, packet + 4, 16);
-    itoa(bl_brake_temperature, packet + 5, 16);
-    itoa(br_wheel_speed, packet + 6, 16);
-    itoa(br_brake_temperature, packet + 7, 16);
-    itoa(front_brake_pressure, packet + 8, 16);
-    itoa(rear_brake_pressure, packet + 9, 16);
-    packet[32] = '\0';
+    itoa(fl_brake_temperature, packet + 2, 16);
+    itoa(fr_wheel_speed, packet + 4, 16);
+    itoa(fr_brake_temperature, packet + 6, 16);
+    itoa(bl_wheel_speed, packet + 8, 16);
+    itoa(bl_brake_temperature, packet + 10, 16);
+    itoa(br_wheel_speed, packet + 12, 16);
+    itoa(br_brake_temperature, packet + 14, 16);
+    itoa(front_brake_pressure, packet + 16, 16);
+    itoa(rear_brake_pressure, packet + 18, 16);
+    packet[20] = '\0';
     
     // Send data
     // Serial.print("Sending "); Serial.println(radiopacket);
     // Serial.println("Sending..."); delay(10);
-    rf95.send((uint8_t *) packet, 20);
+    rf95.send((uint8_t *) packet, 21);
 
     // Wait for completion
     Serial.println("Waiting for packet to complete...");

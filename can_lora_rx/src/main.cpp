@@ -1,4 +1,4 @@
-// TX using RF95 transferring the data from CAN to LoRa
+// RX using RF95, parsing data sent from TX
 // Adapted from previous can_teensy_test project
 // and the LoRa test files found in telemetry-firmware 23:
 // https://github.com/NU-Formula-Racing/telemetry-firmware-23/blob/main/src/
@@ -8,43 +8,27 @@ using namespace std;
 // Proper compilation
 #include <Arduino.h>
 
-// CAN library for Teensy
-#include "teensy_can.h"
-
 // LoRa implementation libraries
 #include <SPI.h>
 #include <RH_RF95.h>
 
-// Initialize bus
-TeensyCAN<1> can_bus{};
+// Formatted data
+float fl_wheel_speed;
+float fl_brake_temperature;
+float fr_wheel_speed;
+float fr_brake_temperature;
+float bl_wheel_speed;
+float bl_brake_temperature;
+float br_wheel_speed;
+float br_brake_temperature;
 
-// CAN data buffers
-// Each signal is 16-bit with 10 sigs in total
-// Total data: 160 bits = 32 bytes (chars)
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed;
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed;
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed;
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> br_wheel_speed;
-
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fl_brake_temperature;
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fr_brake_temperature;
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> bl_brake_temperature;
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> br_brake_temperature;
-
-CANRXMessage<2> fl_wheel_msg{can_bus, 0x400, fl_wheel_speed, fl_brake_temperature};
-CANRXMessage<2> fr_wheel_msg{can_bus, 0x401, fr_wheel_speed, fr_brake_temperature};
-CANRXMessage<2> bl_wheel_msg{can_bus, 0x402, bl_wheel_speed, bl_brake_temperature};
-CANRXMessage<2> br_wheel_msg{can_bus, 0x403, br_wheel_speed, br_brake_temperature};
-
-CANSignal<uint16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> front_brake_pressure;
-CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure;
-
-CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure, rear_brake_pressure};
+uint16_t front_brake_pressure;
+uint16_t rear_brake_pressure;
 
 // RF95 inits and defines
 #define RFM95_CS 10
-#define RFM95_RST 9
-#define RFM95_INT 2
+#define RFM95_RST 2
+#define RFM95_INT 3
 
 // Must match RX freq; alt: 434.0
 #define RF95_FREQ 915.0
@@ -52,23 +36,18 @@ CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure, rear_br
 // Singleton instance of driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
+// Blink on receipt
+#define LED 13
+
 void setup() {
-    // Initialize CAN bus
-    can_bus.RegisterRXMessage(fl_wheel_msg);
-    can_bus.RegisterRXMessage(fr_wheel_msg);
-    can_bus.RegisterRXMessage(bl_wheel_msg);
-    can_bus.RegisterRXMessage(br_wheel_msg);
-    can_bus.RegisterRXMessage(brake_pressure_msg);
-
-    can_bus.Initialize(ICAN::BaudRate::kBaud1M);
-
     // Initialize Serial
     while(!Serial);
     Serial.begin(9600);
     delay(100);
-    Serial.println("CAN-LoRa test: TX");
+    Serial.println("CAN-LoRa test: RX");
 
     // Initial RF ops
+    pinMode(LED, OUTPUT);     
     pinMode(RFM95_RST, OUTPUT);
     digitalWrite(RFM95_RST, HIGH);
 
@@ -102,43 +81,82 @@ void setup() {
     delay(500);
 }
 
+// Expected packet length
+#define LEN 21
+
 void loop() {
-    // Update CAN data
-    can_bus.Tick();
-
-    // Print data to Serial
-    Serial.print("Sending WS { FL: "); Serial.print(fl_wheel_speed);
-    Serial.print(" FR: "); Serial.print(fr_wheel_speed);
-    Serial.print(" BL: "); Serial.print(bl_wheel_speed);
-    Serial.print(" BR: "); Serial.print(br_wheel_speed);
-    Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
-    Serial.print(" FR: "); Serial.print(fr_brake_temperature);
-    Serial.print(" BL: "); Serial.print(bl_brake_temperature);
-    Serial.print(" BR: "); Serial.print(br_brake_temperature);
-    Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
-    Serial.print(" R: "); Serial.print(rear_brake_pressure);
-    Serial.println(" }");
-
     // Initialize radio packet
-    char packet[33] = "                                \0";
-    itoa(fl_wheel_speed, packet, 16);
-    itoa(fl_brake_temperature, packet + 1, 16);
-    itoa(fr_wheel_speed, packet + 2, 16);
-    itoa(fr_brake_temperature, packet + 3, 16);
-    itoa(bl_wheel_speed, packet + 4, 16);
-    itoa(bl_brake_temperature, packet + 5, 16);
-    itoa(br_wheel_speed, packet + 6, 16);
-    itoa(br_brake_temperature, packet + 7, 16);
-    itoa(front_brake_pressure, packet + 8, 16);
-    itoa(rear_brake_pressure, packet + 9, 16);
-    
-    // Send data
-    // Serial.print("Sending "); Serial.println(radiopacket);
-    // Serial.println("Sending..."); delay(10);
-    rf95.send((uint8_t *)radiopacket, 20);
+    char packet[LEN];
 
-    // Wait for completion
-    Serial.println("Waiting for packet to complete...");
-    delay(10);
-    rf95.waitPacketSent();
+    // Check radio status
+    if (rf95.available()) {
+        // Should be a message for us now   
+        uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+        uint8_t len = sizeof(buf);
+    
+        // The buffer should match exactly the length of the message
+        if (len == LEN || rf95.recv(buf, &len)) {
+            // Receive successful
+            digitalWrite(LED, HIGH);
+            RH_RF95::printBuffer("Received ", buf, len);
+            Serial.print("Got: ");
+            Serial.println((char*) buf);
+            // Serial.print("RSSI: ");
+            // Serial.println(rf95.lastRssi(), DEC);
+
+            // Parse data
+            // Slice of packet to look into for parsing
+            char short_buffer[2];
+
+            // TODO: if possible, find a way to get slice without copying
+            short_buffer[0] = packet[0];
+            short_buffer[1] = packet[1];
+            fl_wheel_speed = atoi(short_buffer);
+            short_buffer[0] = packet[2];
+            short_buffer[1] = packet[3];
+            fl_brake_temperature = atoi(short_buffer);
+            short_buffer[0] = packet[4];
+            short_buffer[1] = packet[5];
+            fr_wheel_speed = atoi(short_buffer);
+            short_buffer[0] = packet[6];
+            short_buffer[1] = packet[7];
+            fr_brake_temperature = atoi(short_buffer);
+            short_buffer[0] = packet[8];
+            short_buffer[1] = packet[9];
+            bl_wheel_speed = atoi(short_buffer);
+            short_buffer[0] = packet[10];
+            short_buffer[1] = packet[11];
+            bl_brake_temperature = atoi(short_buffer);
+            short_buffer[0] = packet[12];
+            short_buffer[1] = packet[13];
+            br_wheel_speed = atoi(short_buffer);
+            short_buffer[0] = packet[14];
+            short_buffer[1] = packet[15];
+            br_brake_temperature = atoi(short_buffer);
+            short_buffer[0] = packet[16];
+            short_buffer[1] = packet[17];
+            front_brake_pressure = atoi(short_buffer);
+            short_buffer[0] = packet[18];
+            short_buffer[1] = packet[19];
+            rear_brake_pressure = atoi(short_buffer);
+
+            // Print data to Serial
+            Serial.print("WS { FL: "); Serial.print(fl_wheel_speed);
+            Serial.print(" FR: "); Serial.print(fr_wheel_speed);
+            Serial.print(" BL: "); Serial.print(bl_wheel_speed);
+            Serial.print(" BR: "); Serial.print(br_wheel_speed);
+            Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
+            Serial.print(" FR: "); Serial.print(fr_brake_temperature);
+            Serial.print(" BL: "); Serial.print(bl_brake_temperature);
+            Serial.print(" BR: "); Serial.print(br_brake_temperature);
+            Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
+            Serial.print(" R: "); Serial.print(rear_brake_pressure);
+            Serial.println(" }");
+
+            // End receipt handling
+            digitalWrite(LED, LOW);
+        } else {
+            Serial.println("Receive failed");
+        }
+    }
 }
