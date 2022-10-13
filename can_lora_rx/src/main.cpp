@@ -77,7 +77,7 @@ void setup() {
     // Transmitter power can be set from 5 to 23 dBm
     rf95.setTxPower(23, false);
 
-    Serial.println("Begin transmitting data");
+    Serial.println("Begin receiving data");
     delay(500);
 }
 
@@ -95,7 +95,7 @@ void loop() {
         uint8_t len = sizeof(buf);
     
         // The buffer should match exactly the length of the message
-        if (len == LEN || rf95.recv(buf, &len)) {
+        if (len == LEN && rf95.recv(buf, &len)) {
             // Receive successful
             digitalWrite(LED, HIGH);
             RH_RF95::printBuffer("Received ", buf, len);
