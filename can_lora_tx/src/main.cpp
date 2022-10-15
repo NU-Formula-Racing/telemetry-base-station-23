@@ -52,6 +52,11 @@ CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure, rear_br
 // Singleton instance of driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
+/// @brief Short (16-bit datatype) TO Buffer (of chars/bytes with arbitrary starting index)
+/// @param sh  pointer to any short, cast to char* for consistency; caller must guarantee original type
+/// @param buf pointer to any char* (byte) buffer; starting index set by caller, must guarantee in-bounds
+void stob(char* sh, char* buf);
+
 void setup() {
     // Initialize CAN bus
     can_bus.RegisterRXMessage(fl_wheel_msg);
@@ -121,6 +126,10 @@ void loop() {
 
     // Declare and initialize radio packet
     char packet[21];
+
+    // Traditional int/data to char conversion
+    // Due to lack of std definition of itoa and unusual behavior, using a custom serialization algorithm instead
+    /*
     itoa(fl_wheel_speed, packet, 16);
     itoa(fl_brake_temperature, packet + 2, 16);
     itoa(fr_wheel_speed, packet + 4, 16);
@@ -131,7 +140,23 @@ void loop() {
     itoa(br_brake_temperature, packet + 14, 16);
     itoa(front_brake_pressure, packet + 16, 16);
     itoa(rear_brake_pressure, packet + 18, 16);
+     */
+
+    // Using custom function to serialize data
+    // Each var is stored in the packet as 2-byte LE
+    // This does the minimal amount of processing besides typecasting and pointer arithmetic
+    stob((char*) &fl_wheel_speed, packet);
+    stob((char*) &fl_brake_temperature, packet + 2);
+    stob((char*) &fr_wheel_speed, packet + 4);
+    stob((char*) &fr_brake_temperature, packet + 6);
+    stob((char*) &bl_wheel_speed, packet + 8);
+    stob((char*) &bl_brake_temperature, packet + 10);
+    stob((char*) &br_wheel_speed, packet + 12);
+    stob((char*) &br_brake_temperature, packet + 14);
+    
     packet[20] = '\0';
+
+    Serial.print("Packet: "); Serial.println(packet);
     
     // Send data
     // Serial.print("Sending "); Serial.println(radiopacket);
@@ -142,4 +167,9 @@ void loop() {
     Serial.println("Waiting for packet to complete...");
     delay(10);
     rf95.waitPacketSent();
+}
+
+void stob(char* sh, char* buf) {
+    buf[0] = *sh;
+    buf[1] = *(sh + 1);
 }
