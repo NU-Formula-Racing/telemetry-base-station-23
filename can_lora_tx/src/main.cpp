@@ -1,145 +1,102 @@
-// TX using RF95 transferring the data from CAN to LoRa
-// Adapted from previous can_teensy_test project
-// and the LoRa test files found in telemetry-firmware 23:
-// https://github.com/NU-Formula-Racing/telemetry-firmware-23/blob/main/src/
+// LoRa 9x_TX
+// -*- mode: C++ -*-
+// Example sketch showing how to create a simple messaging client (transmitter)
+// with the RH_RF95 class. RH_RF95 class does not provide for addressing or
+// reliability, so you should only use RH_RF95 if you do not need the higher
+// level messaging abilities.
+// It is designed to work with the other example LoRa9x_RX
 
-using namespace std;
-
-// Proper compilation
-#include <Arduino.h>
-
-// CAN library for Teensy
-#include "teensy_can.h"
-
-// LoRa implementation libraries
 #include <SPI.h>
 #include <RH_RF95.h>
 
-// Initialize bus
-TeensyCAN<1> can_bus{};
-
-// CAN data buffers
-// Each signal is 16-bit with 10 sigs in total
-// Total data: 160 bits = 20 bytes (chars)
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed;
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed;
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed;
-CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> br_wheel_speed;
-
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fl_brake_temperature;
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fr_brake_temperature;
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> bl_brake_temperature;
-CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> br_brake_temperature;
-
-CANRXMessage<2> fl_wheel_msg{can_bus, 0x400, fl_wheel_speed, fl_brake_temperature};
-CANRXMessage<2> fr_wheel_msg{can_bus, 0x401, fr_wheel_speed, fr_brake_temperature};
-CANRXMessage<2> bl_wheel_msg{can_bus, 0x402, bl_wheel_speed, bl_brake_temperature};
-CANRXMessage<2> br_wheel_msg{can_bus, 0x403, br_wheel_speed, br_brake_temperature};
-
-CANSignal<uint16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> front_brake_pressure;
-CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure;
-
-CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure, rear_brake_pressure};
-
-// RF95 inits and defines
 #define RFM95_CS 10
 #define RFM95_RST 9
 #define RFM95_INT 2
 
-// Must match RX freq; alt: 434.0
+// Change to 434.0 or other frequency, must match RX's freq!
 #define RF95_FREQ 915.0
 
-// Singleton instance of driver
+// Singleton instance of the radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
-void setup() {
-    // Initialize CAN bus
-    can_bus.RegisterRXMessage(fl_wheel_msg);
-    can_bus.RegisterRXMessage(fr_wheel_msg);
-    can_bus.RegisterRXMessage(bl_wheel_msg);
-    can_bus.RegisterRXMessage(br_wheel_msg);
-    can_bus.RegisterRXMessage(brake_pressure_msg);
+void setup() 
+{
+  pinMode(RFM95_RST, OUTPUT);
+  digitalWrite(RFM95_RST, HIGH);
 
-    can_bus.Initialize(ICAN::BaudRate::kBaud1M);
+  while (!Serial);
+  Serial.begin(9600);
+  delay(100);
 
-    // Initialize Serial
-    while(!Serial);
-    Serial.begin(9600);
-    delay(100);
-    Serial.println("CAN-LoRa test: TX");
+  Serial.println("Arduino LoRa TX Test!");
 
-    // Initial RF ops
-    pinMode(RFM95_RST, OUTPUT);
-    digitalWrite(RFM95_RST, HIGH);
+  // manual reset
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
 
-    // Manual reset
-    digitalWrite(RFM95_RST, LOW);
-    delay(10);
-    digitalWrite(RFM95_RST, HIGH);
-    delay(10);
+  while (!rf95.init()) {
+    Serial.println("LoRa radio init failed");
+    while (1);
+  }
+  Serial.println("LoRa radio init OK!");
 
-    // Attempt to initialize radio
-    while (!rf95.init()) {
-        Serial.println("LoRa radio init failed");
-        while (1); // "Terminates" program without halting, infinite loop
-    }
-    Serial.println("LoRa radio init OK");
+  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
+  if (!rf95.setFrequency(RF95_FREQ)) {
+    Serial.println("setFrequency failed");
+    while (1);
+  }
+  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  
+  // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
-    // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dBm,
-    // Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
-
-    // Attempt to set frequency as defined
-    if (!rf95.setFrequency(RF95_FREQ)) {
-        Serial.println("Failed to set frequency");
-        while (1);
-    }
-    Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-
-    // Transmitter power can be set from 5 to 23 dBm
-    rf95.setTxPower(23, false);
-
-    Serial.println("Begin transmitting data");
-    delay(500);
+  // The default transmitter power is 13dBm, using PA_BOOST.
+  // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
+  // you can set transmitter powers from 5 to 23 dBm:
+  rf95.setTxPower(23, false);
 }
 
-void loop() {
-    // Update CAN data
-    can_bus.Tick();
+int16_t packetnum = 0;  // packet counter, we increment per xmission
 
-    // Print data to Serial
-    Serial.print("Sending WS { FL: "); Serial.print(fl_wheel_speed);
-    Serial.print(" FR: "); Serial.print(fr_wheel_speed);
-    Serial.print(" BL: "); Serial.print(bl_wheel_speed);
-    Serial.print(" BR: "); Serial.print(br_wheel_speed);
-    Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
-    Serial.print(" FR: "); Serial.print(fr_brake_temperature);
-    Serial.print(" BL: "); Serial.print(bl_brake_temperature);
-    Serial.print(" BR: "); Serial.print(br_brake_temperature);
-    Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
-    Serial.print(" R: "); Serial.print(rear_brake_pressure);
-    Serial.println(" }");
+void loop()
+{
+  Serial.println("Sending to rf95_server");
+  // Send a message to rf95_server
+  
+  char radiopacket[20] = "Hello World #      ";
+  itoa(packetnum++, radiopacket+13, 10);
+  Serial.print("Sending "); Serial.println(radiopacket);
+  radiopacket[19] = 0;
+  
+  Serial.println("Sending..."); delay(10);
+  rf95.send((uint8_t *)radiopacket, 20);
 
-    // Declare and initialize radio packet
-    char packet[21];
-    itoa(fl_wheel_speed, packet, 16);
-    itoa(fl_brake_temperature, packet + 2, 16);
-    itoa(fr_wheel_speed, packet + 4, 16);
-    itoa(fr_brake_temperature, packet + 6, 16);
-    itoa(bl_wheel_speed, packet + 8, 16);
-    itoa(bl_brake_temperature, packet + 10, 16);
-    itoa(br_wheel_speed, packet + 12, 16);
-    itoa(br_brake_temperature, packet + 14, 16);
-    itoa(front_brake_pressure, packet + 16, 16);
-    itoa(rear_brake_pressure, packet + 18, 16);
-    packet[20] = '\0';
-    
-    // Send data
-    // Serial.print("Sending "); Serial.println(radiopacket);
-    // Serial.println("Sending..."); delay(10);
-    rf95.send((uint8_t *) packet, 21);
+  Serial.println("Waiting for packet to complete..."); delay(10);
+  rf95.waitPacketSent();
+  // Now wait for a reply
+  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+  uint8_t len = sizeof(buf);
 
-    // Wait for completion
-    Serial.println("Waiting for packet to complete...");
-    delay(10);
-    rf95.waitPacketSent();
+  Serial.println("Waiting for reply..."); delay(10);
+  if (rf95.waitAvailableTimeout(1000))
+  { 
+    // Should be a reply message for us now   
+    if (rf95.recv(buf, &len))
+   {
+      Serial.print("Got reply: ");
+      Serial.println((char*)buf);
+      Serial.print("RSSI: ");
+      Serial.println(rf95.lastRssi(), DEC);    
+    }
+    else
+    {
+      Serial.println("Receive failed");
+    }
+  }
+  else
+  {
+    Serial.println("No reply, is there a listener around?");
+  }
+  delay(1000);
 }
