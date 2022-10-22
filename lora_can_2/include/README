@@ -6,4 +6,10 @@ in case the full CAN requires more than one packet to transmit.
 
 Its implementation is found in `src/telemetry.cpp`.
 
-`target.h` sets the compilation macro to determine for which device to compile for
+`target.h` sets the compilation macro to determine for which device to compile for.
+It includes 2 macros; uncomment exactly **one** to specify device, as some libraries
+will not work without the matching hardware.
+
+`ser_des.h` contains serializer and deserializer (?) functions to serialize data,
+namely by converting various datatypes to 2-byte char pairs for the data packet.
+Its implementation can be found in ser_des.cpp.
