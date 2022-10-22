@@ -1,0 +1,7 @@
+`telemetry.h` condenses external includes, hardware pin and freq configurations,
+global vars, and task functions into a unified template file.
+
+The `packetnum` var can be used both for debugging and packet ordering
+in case the full CAN requires more than one packet to transmit.
+
+Its implementation is found in `src/telemetry.cpp`.
