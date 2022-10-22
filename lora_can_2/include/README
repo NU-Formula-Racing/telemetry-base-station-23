@@ -5,3 +5,5 @@ The `packetnum` var can be used both for debugging and packet ordering
 in case the full CAN requires more than one packet to transmit.
 
 Its implementation is found in `src/telemetry.cpp`.
+
+`target.h` sets the compilation macro to determine for which device to compile for

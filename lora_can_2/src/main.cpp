@@ -1,18 +1,9 @@
 /********** INCLUDES **********/
 #include <Arduino.h>
-#include "telemetry.h"
 #include "virtualTimer.h"
 
-/********** DEFINES **********/
-/**
- * Specify which of the device programs to compile:
- * - TX: receive from CAN, send to RX
- * - RX: receive from RX, sent through USB
- * Only uncomment ONE or undef stuff may happen!!!
- */
-
-// #define TX
-#define RX
+#include "telemetry.h"
+#include "target.h"
 
 /********** VARIABLES **********/
 VirtualTimerGroup timer_group;
@@ -28,11 +19,13 @@ void setup() {
   }
 
   // Add tasks to timer
-  #ifdef TX
+  #ifdef TELEMETRY_BASE_STATION_TX
+    Serial.println("CAN-LoRa test: TX");
     timer_group.AddTimer(1U, tx_task);
   #endif
 
-  #ifdef RX
+  #ifdef TELEMETRY_BASE_STATION_RX
+    Serial.println("CAN-LoRa test: RX");
     // Longer time increment used to give time to listen
     timer_group.AddTimer(1000U, rx_task);
   #endif
