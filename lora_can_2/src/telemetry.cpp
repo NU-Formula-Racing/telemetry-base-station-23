@@ -159,65 +159,30 @@ bool telemetry_setup() {
  * 
  */
 void tx_task() {
-  if (rf95.available() && (rfm95_init_successful == true)) {
-
-  #ifdef TELEMETRY_BASE_STATION_TX
-    // Update CAN data
-    can_bus.Tick();
-
-    // Test: print data to Serial
-    Serial.print("Sending WS { FL: "); Serial.print(fl_wheel_speed);
-    Serial.print(" FR: "); Serial.print(fr_wheel_speed);
-    Serial.print(" BL: "); Serial.print(bl_wheel_speed);
-    Serial.print(" BR: "); Serial.print(br_wheel_speed);
-    Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
-    Serial.print(" FR: "); Serial.print(fr_brake_temperature);
-    Serial.print(" BL: "); Serial.print(bl_brake_temperature);
-    Serial.print(" BR: "); Serial.print(br_brake_temperature);
-    Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
-    Serial.print(" R: "); Serial.print(rear_brake_pressure);
-    Serial.println(" }");
-  #endif
-
-    // Should be a message for us now   
-    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(buf);
-    
-    if (rf95.recv(buf, &len)) {
-      RH_RF95::printBuffer("Received: ", buf, len);
-      Serial.print("Got: ");
-      Serial.println((char*)buf);
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
-      
-      // Send a reply
-      uint8_t data[] = "And hello back to you:";
-      #ifdef TELEMETRY_BASE_STATION_TX
-        stob((char*) &fl_wheel_speed, data + 22);
-      #endif
-
-      // Delay responding--otherwise you can respond too fast and it doesn't hear you
-      delay(10);
-      rf95.send(data, sizeof(data));
-      rf95.waitPacketSent();
-      Serial.println("Sent a reply");
-    } else {
-      Serial.println("Receive failed");
-    }
-  }
-}
-
-/**
- * @brief Receiver (RX) code
- * 
- */
-void rx_task() {
   if (rfm95_init_successful == true) {
-    // Serial.println("Sending to rf95_server");
-    // Send a message to TX
-    
+    #ifdef TELEMETRY_BASE_STATION_TX
+      // Update CAN data
+      can_bus.Tick();
+
+      // Test: print data to Serial
+      Serial.print("Sending WS { FL: "); Serial.print(fl_wheel_speed);
+      Serial.print(" FR: "); Serial.print(fr_wheel_speed);
+      Serial.print(" BL: "); Serial.print(bl_wheel_speed);
+      Serial.print(" BR: "); Serial.print(br_wheel_speed);
+      Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
+      Serial.print(" FR: "); Serial.print(fr_brake_temperature);
+      Serial.print(" BL: "); Serial.print(bl_brake_temperature);
+      Serial.print(" BR: "); Serial.print(br_brake_temperature);
+      Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
+      Serial.print(" R: "); Serial.print(rear_brake_pressure);
+      Serial.println(" }");
+    #endif
+
     char radiopacket[20] = "Hello World #      ";
-    itoa(packetnum++, radiopacket+13, 10);
+    #ifdef TELEMETRY_BASE_STATION_TX
+      stob((char*) &packetnum, radiopacket + 13);
+      ++packetnum;
+    #endif
     Serial.print("Sending "); 
     Serial.println(radiopacket);
     radiopacket[19] = 0;
@@ -229,24 +194,28 @@ void rx_task() {
     // Serial.println("Waiting for packet to complete..."); 
     delay(10);
     rf95.waitPacketSent();
-    // Now wait for a reply
+  }
+}
+
+/**
+ * @brief Receiver (RX) code
+ * 
+ */
+void rx_task() {
+  if (rf95.available() && (rfm95_init_successful == true)) {
+
+    // Should be a message for us now   
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
-
-    Serial.println("Waiting for reply..."); 
-    delay(10);
-    if (rf95.waitAvailableTimeout(1000)) { 
-      // Should be a reply message for us now   
-      if (rf95.recv(buf, &len)) {
-        Serial.print("Got reply: ");
-        Serial.println((char*)buf);
-        Serial.print("RSSI: ");
-        Serial.println(rf95.lastRssi(), DEC);    
-      } else {
-        Serial.println("Receive failed");
-      }
+    
+    if (rf95.recv(buf, &len)) {
+      RH_RF95::printBuffer("Received: ", buf, len);
+      Serial.print("Got: ");
+      Serial.println((char*)buf);
+      Serial.print("RSSI: ");
+      Serial.println(rf95.lastRssi(), DEC);
     } else {
-      Serial.println("No reply, is there a listener around?");
+      Serial.println("Receive failed");
     }
 
     #ifdef TELEMETRY_BASE_STATION_RX
