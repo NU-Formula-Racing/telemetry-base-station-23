@@ -176,24 +176,33 @@ void tx_task() {
       Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
       Serial.print(" R: "); Serial.print(rear_brake_pressure);
       Serial.println(" }");
-    #endif
 
-    char radiopacket[20] = "Hello World #      ";
-    #ifdef TELEMETRY_BASE_STATION_TX
-      stob((char*) &packetnum, radiopacket + 13);
-      ++packetnum;
-    #endif
-    Serial.print("Sending "); 
-    Serial.println(radiopacket);
-    radiopacket[19] = 0;
+      // Convert chars to int
+      stob((char*) &fl_wheel_speed, packet);
+      stob((char*) &fl_brake_temperature, packet + 2);
+      stob((char*) &fr_wheel_speed, packet + 4);
+      stob((char*) &fr_brake_temperature, packet + 6);
+      stob((char*) &bl_wheel_speed, packet + 8);
+      stob((char*) &bl_brake_temperature, packet + 10);
+      stob((char*) &br_wheel_speed, packet + 12);
+      stob((char*) &br_brake_temperature, packet + 14);
+
+      stob((char*) &front_brake_pressure, packet + 16);
+      stob((char*) &rear_brake_pressure, packet + 18);
+
+      stob((char*) &packetnum, packet + 20);
+      packetnum++;
     
-    // Serial.println("Sending..."); 
-    delay(10);
-    rf95.send((uint8_t *)radiopacket, 20);
+      packet[22] = '\0';
 
-    // Serial.println("Waiting for packet to complete..."); 
-    delay(10);
-    rf95.waitPacketSent();
+      Serial.print("Packet: "); Serial.println(packet);
+      
+      // Send data and verify completion
+      delay(10);
+      rf95.send((uint8_t *) packet, PACKET_SIZE);
+      delay(10);
+      rf95.waitPacketSent();
+    #endif
   }
 }
 
@@ -205,32 +214,71 @@ void rx_task() {
   if (rf95.available() && (rfm95_init_successful == true)) {
 
     // Should be a message for us now   
-    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(buf);
-    
-    if (rf95.recv(buf, &len)) {
-      RH_RF95::printBuffer("Received: ", buf, len);
+    uint8_t packet[RH_RF95_MAX_MESSAGE_LEN];
+    uint8_t len = sizeof(packet);
+
+    // The buffer should match exactly the length of the message
+    if (rf95.recv(packet, &len)) {
+      // Receive successful
+      RH_RF95::printBuffer("Received ", packet, len);
       Serial.print("Got: ");
-      Serial.println((char*)buf);
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
+      Serial.println((char*) packet);
+
+      #ifdef TELEMETRY_BASE_STATION_RX
+        // Parse data
+        // Slice of packet to look into for parsing
+        char short_buffer[2];
+
+        // TODO: if possible, find a way to get slice without copying
+        short_buffer[0] = packet[0];
+        short_buffer[1] = packet[1];
+        fl_wheel_speed = atoi(short_buffer);
+        short_buffer[0] = packet[2];
+        short_buffer[1] = packet[3];
+        fl_brake_temperature = atoi(short_buffer);
+        short_buffer[0] = packet[4];
+        short_buffer[1] = packet[5];
+        fr_wheel_speed = atoi(short_buffer);
+        short_buffer[0] = packet[6];
+        short_buffer[1] = packet[7];
+        fr_brake_temperature = atoi(short_buffer);
+        short_buffer[0] = packet[8];
+        short_buffer[1] = packet[9];
+        bl_wheel_speed = atoi(short_buffer);
+        short_buffer[0] = packet[10];
+        short_buffer[1] = packet[11];
+        bl_brake_temperature = atoi(short_buffer);
+        short_buffer[0] = packet[12];
+        short_buffer[1] = packet[13];
+        br_wheel_speed = atoi(short_buffer);
+        short_buffer[0] = packet[14];
+        short_buffer[1] = packet[15];
+        br_brake_temperature = atoi(short_buffer);
+        short_buffer[0] = packet[16];
+        short_buffer[1] = packet[17];
+        front_brake_pressure = atoi(short_buffer);
+        short_buffer[0] = packet[18];
+        short_buffer[1] = packet[19];
+        rear_brake_pressure = atoi(short_buffer);
+        short_buffer[0] = packet[20];
+        short_buffer[1] = packet[21];
+        packetnum = atoi(short_buffer);
+
+        // Print data to Serial
+        Serial.print("WS { FL: "); Serial.print(fl_wheel_speed);
+        Serial.print(" FR: "); Serial.print(fr_wheel_speed);
+        Serial.print(" BL: "); Serial.print(bl_wheel_speed);
+        Serial.print(" BR: "); Serial.print(br_wheel_speed);
+        Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
+        Serial.print(" FR: "); Serial.print(fr_brake_temperature);
+        Serial.print(" BL: "); Serial.print(bl_brake_temperature);
+        Serial.print(" BR: "); Serial.print(br_brake_temperature);
+        Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
+        Serial.print(" R: "); Serial.print(rear_brake_pressure);
+        Serial.print(" } #"); Serial.println(packetnum);
+      #endif
     } else {
       Serial.println("Receive failed");
     }
-
-    #ifdef TELEMETRY_BASE_STATION_RX
-      // Print data to Serial
-      Serial.print("WS { FL: "); Serial.print(fl_wheel_speed);
-      Serial.print(" FR: "); Serial.print(fr_wheel_speed);
-      Serial.print(" BL: "); Serial.print(bl_wheel_speed);
-      Serial.print(" BR: "); Serial.print(br_wheel_speed);
-      Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
-      Serial.print(" FR: "); Serial.print(fr_brake_temperature);
-      Serial.print(" BL: "); Serial.print(bl_brake_temperature);
-      Serial.print(" BR: "); Serial.print(br_brake_temperature);
-      Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
-      Serial.print(" R: "); Serial.print(rear_brake_pressure);
-      Serial.println(" }");
-    #endif
   }
 }
