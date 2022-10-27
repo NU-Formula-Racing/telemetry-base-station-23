@@ -13,11 +13,11 @@
 #include "telemetry.h"
 
 #include "target.h"
+#include "ser_des.h"
 
 #ifdef TELEMETRY_BASE_STATION_TX
   // CAN library for Teensy
   #include "teensy_can.h"
-  #include "ser_des.h"
 #endif
 
 /********** DEFINES **********/
@@ -138,17 +138,17 @@ bool telemetry_setup() {
 
   #ifdef TELEMETRY_BASE_STATION_RX
     // Dummy values; test if current pipeline allows for RX comp
-    fl_wheel_speed = 0.0;;
-    fl_brake_temperature = 1.0;;
-    fr_wheel_speed = 2.0;
-    fr_brake_temperature = 3.0;
-    bl_wheel_speed = 4.0;
-    bl_brake_temperature = 5.0;
-    br_wheel_speed = 6.0;
-    br_brake_temperature = 7.0;
+    // fl_wheel_speed = 0.0;
+    // fl_brake_temperature = 1.0;
+    // fr_wheel_speed = 2.0;
+    // fr_brake_temperature = 3.0;
+    // bl_wheel_speed = 4.0;
+    // bl_brake_temperature = 5.0;
+    // br_wheel_speed = 6.0;
+    // br_brake_temperature = 7.0;
 
-    front_brake_pressure = 8;
-    rear_brake_pressure = 9;
+    // front_brake_pressure = 8;
+    // rear_brake_pressure = 9;
   #endif
 
   return rfm95_init_successful;
@@ -164,28 +164,28 @@ void tx_task() {
       // Update CAN data
       can_bus.Tick();
 
-      // Test: print data to Serial
-      Serial.print("Sending WS { FL: "); Serial.print(fl_wheel_speed);
-      Serial.print(" FR: "); Serial.print(fr_wheel_speed);
-      Serial.print(" BL: "); Serial.print(bl_wheel_speed);
-      Serial.print(" BR: "); Serial.print(br_wheel_speed);
-      Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
-      Serial.print(" FR: "); Serial.print(fr_brake_temperature);
-      Serial.print(" BL: "); Serial.print(bl_brake_temperature);
-      Serial.print(" BR: "); Serial.print(br_brake_temperature);
-      Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
-      Serial.print(" R: "); Serial.print(rear_brake_pressure);
-      Serial.println(" }");
-
       // Convert chars to int
-      stob((char*) &fl_wheel_speed, packet);
-      stob((char*) &fl_brake_temperature, packet + 2);
-      stob((char*) &fr_wheel_speed, packet + 4);
-      stob((char*) &fr_brake_temperature, packet + 6);
-      stob((char*) &bl_wheel_speed, packet + 8);
-      stob((char*) &bl_brake_temperature, packet + 10);
-      stob((char*) &br_wheel_speed, packet + 12);
-      stob((char*) &br_brake_temperature, packet + 14);
+      stob((char*) &(fl_wheel_speed.value_ref()), packet);
+      stob((char*) &(fl_brake_temperature.value_ref()), packet + 2);
+      stob((char*) &(fr_wheel_speed.value_ref()), packet + 4);
+      stob((char*) &(fr_brake_temperature.value_ref()), packet + 6);
+      stob((char*) &(bl_wheel_speed.value_ref()), packet + 8);
+      stob((char*) &(bl_brake_temperature.value_ref()), packet + 10);
+      stob((char*) &(br_wheel_speed.value_ref()), packet + 12);
+      stob((char*) &(br_brake_temperature.value_ref()), packet + 14);
+
+      // Test: print data to Serial
+      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed));
+      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed));
+      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed));
+      Serial.print(" BR: "); Serial.print(float(br_wheel_speed));
+      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature));
+      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature));
+      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature));
+      Serial.print(" BR: "); Serial.print(float(br_brake_temperature));
+      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure));
+      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure));
+      Serial.print(" } #"); Serial.println(packetnum);
 
       stob((char*) &front_brake_pressure, packet + 16);
       stob((char*) &rear_brake_pressure, packet + 18);
@@ -226,43 +226,19 @@ void rx_task() {
 
       #ifdef TELEMETRY_BASE_STATION_RX
         // Parse data
-        // Slice of packet to look into for parsing
-        char short_buffer[2];
+        btos((char*) &fl_wheel_speed, (char*) packet);
+        btos((char*) &fl_brake_temperature, (char*) packet + 2);
+        btos((char*) &fr_wheel_speed, (char*) packet + 4);
+        btos((char*) &fr_brake_temperature, (char*) packet + 6);
+        btos((char*) &bl_wheel_speed, (char*) packet + 8);
+        btos((char*) &bl_brake_temperature, (char*) packet + 10);
+        btos((char*) &br_wheel_speed, (char*) packet + 12);
+        btos((char*) &br_brake_temperature, (char*) packet + 14);
 
-        // TODO: if possible, find a way to get slice without copying
-        short_buffer[0] = packet[0];
-        short_buffer[1] = packet[1];
-        fl_wheel_speed = atoi(short_buffer);
-        short_buffer[0] = packet[2];
-        short_buffer[1] = packet[3];
-        fl_brake_temperature = atoi(short_buffer);
-        short_buffer[0] = packet[4];
-        short_buffer[1] = packet[5];
-        fr_wheel_speed = atoi(short_buffer);
-        short_buffer[0] = packet[6];
-        short_buffer[1] = packet[7];
-        fr_brake_temperature = atoi(short_buffer);
-        short_buffer[0] = packet[8];
-        short_buffer[1] = packet[9];
-        bl_wheel_speed = atoi(short_buffer);
-        short_buffer[0] = packet[10];
-        short_buffer[1] = packet[11];
-        bl_brake_temperature = atoi(short_buffer);
-        short_buffer[0] = packet[12];
-        short_buffer[1] = packet[13];
-        br_wheel_speed = atoi(short_buffer);
-        short_buffer[0] = packet[14];
-        short_buffer[1] = packet[15];
-        br_brake_temperature = atoi(short_buffer);
-        short_buffer[0] = packet[16];
-        short_buffer[1] = packet[17];
-        front_brake_pressure = atoi(short_buffer);
-        short_buffer[0] = packet[18];
-        short_buffer[1] = packet[19];
-        rear_brake_pressure = atoi(short_buffer);
-        short_buffer[0] = packet[20];
-        short_buffer[1] = packet[21];
-        packetnum = atoi(short_buffer);
+        btos((char*) &front_brake_pressure, (char*) packet + 16);
+        btos((char*) &rear_brake_pressure, (char*) packet + 18);
+
+        btos((char*) &packetnum, (char*) packet + 20);
 
         // Print data to Serial
         Serial.print("WS { FL: "); Serial.print(fl_wheel_speed);

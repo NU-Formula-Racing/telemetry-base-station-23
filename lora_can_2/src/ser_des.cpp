@@ -23,3 +23,13 @@ void stob(char* sh, char* buf) {
   buf[0] = *sh;
   buf[1] = *(sh + 1);
 }
+
+/**
+ * @brief Buffer (of chars/bytes with arbitrary starting index) TO Short (16-bit datatype)
+ * @param sh  pointer to any short, cast to char* for consistency; caller must guarantee original type
+ * @param buf pointer to any char* (byte) buffer; starting index set by caller, must guarantee in-bounds
+ */
+void btos(char* sh, char* buf) {
+	*sh = buf[0];
+	*(sh + 1) = buf[1];
+}
