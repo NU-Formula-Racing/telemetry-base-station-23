@@ -46,25 +46,25 @@ bool rfm95_init_successful = true;
   /* CAN data buffers */ 
   // Each signal is 16-bit with 10 sigs in total
   // Total data: 160 bits = 20 bytes (chars)
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed;
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed;
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed;
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> br_wheel_speed;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> br_wheel_speed_sig;
 
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fl_brake_temperature;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fr_brake_temperature;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> bl_brake_temperature;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> br_brake_temperature;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fl_brake_temperature_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fr_brake_temperature_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> bl_brake_temperature_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> br_brake_temperature_sig;
 
-  CANRXMessage<2> fl_wheel_msg{can_bus, 0x400, fl_wheel_speed, fl_brake_temperature};
-  CANRXMessage<2> fr_wheel_msg{can_bus, 0x401, fr_wheel_speed, fr_brake_temperature};
-  CANRXMessage<2> bl_wheel_msg{can_bus, 0x402, bl_wheel_speed, bl_brake_temperature};
-  CANRXMessage<2> br_wheel_msg{can_bus, 0x403, br_wheel_speed, br_brake_temperature};
+  CANRXMessage<2> fl_wheel_msg{can_bus, 0x400, fl_wheel_speed_sig, fl_brake_temperature_sig};
+  CANRXMessage<2> fr_wheel_msg{can_bus, 0x401, fr_wheel_speed_sig, fr_brake_temperature_sig};
+  CANRXMessage<2> bl_wheel_msg{can_bus, 0x402, bl_wheel_speed_sig, bl_brake_temperature_sig};
+  CANRXMessage<2> br_wheel_msg{can_bus, 0x403, br_wheel_speed_sig, br_brake_temperature_sig};
 
-  CANSignal<uint16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> front_brake_pressure;
-  CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure;
+  CANSignal<uint16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> front_brake_pressure_sig;
+  CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure_sig;
 
-  CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure, rear_brake_pressure};
+  CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure_sig, rear_brake_pressure_sig};
 
   // Additional 3 bytes appended at end: 2 bytes for packetnum, 1 byte for null-terminator
   // Total packet size: 23 bytes < capacity
@@ -74,19 +74,29 @@ bool rfm95_init_successful = true;
   char packet[PACKET_SIZE];
 #endif
 
-#ifdef TELEMETRY_BASE_STATION_RX
-  // Formatted data
-  float fl_wheel_speed;
-  float fl_brake_temperature;
-  float fr_wheel_speed;
-  float fr_brake_temperature;
-  float bl_wheel_speed;
-  float bl_brake_temperature;
-  float br_wheel_speed;
-  float br_brake_temperature;
+// Raw signal data
+uint16_t fl_wheel_speed;
+uint16_t fl_brake_temperature;
+uint16_t fr_wheel_speed;
+uint16_t fr_brake_temperature;
+uint16_t bl_wheel_speed;
+uint16_t bl_brake_temperature;
+uint16_t br_wheel_speed;
+uint16_t br_brake_temperature;
 
-  uint16_t front_brake_pressure;
-  uint16_t rear_brake_pressure;
+uint16_t front_brake_pressure;
+uint16_t rear_brake_pressure;
+
+#ifdef TELEMETRY_BASE_STATION_RX
+  // The "true" values, or formatted values for floating-point sensors
+  float fl_wheel_speed_true;
+  float fl_brake_temperature_true;
+  float fr_wheel_speed_true;
+  float fr_brake_temperature_true;
+  float bl_wheel_speed_true;
+  float bl_brake_temperature_true;
+  float br_wheel_speed_true;
+  float br_brake_temperature_true;
 #endif
 
 /********** PUBLIC FUNCTION DEFINITIONS **********/
@@ -138,7 +148,7 @@ bool telemetry_setup() {
 
   #ifdef TELEMETRY_BASE_STATION_RX
     // Dummy values; test if current pipeline allows for RX comp
-    // fl_wheel_speed = 0.0;
+    // fl_wheel_speed = 10.0;
     // fl_brake_temperature = 1.0;
     // fr_wheel_speed = 2.0;
     // fr_brake_temperature = 3.0;
@@ -164,38 +174,49 @@ void tx_task() {
       // Update CAN data
       can_bus.Tick();
 
-      // Convert chars to int
-      stob((char*) &(fl_wheel_speed.value_ref()), packet);
-      stob((char*) &(fl_brake_temperature.value_ref()), packet + 2);
-      stob((char*) &(fr_wheel_speed.value_ref()), packet + 4);
-      stob((char*) &(fr_brake_temperature.value_ref()), packet + 6);
-      stob((char*) &(bl_wheel_speed.value_ref()), packet + 8);
-      stob((char*) &(bl_brake_temperature.value_ref()), packet + 10);
-      stob((char*) &(br_wheel_speed.value_ref()), packet + 12);
-      stob((char*) &(br_brake_temperature.value_ref()), packet + 14);
+      // Re-encode floats to 
 
       // Test: print data to Serial
-      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed));
-      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed));
-      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed));
-      Serial.print(" BR: "); Serial.print(float(br_wheel_speed));
-      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature));
-      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature));
-      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature));
-      Serial.print(" BR: "); Serial.print(float(br_brake_temperature));
-      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure));
-      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure));
+      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
+      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
+      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
+      Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
+      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
+      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
+      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
+      Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
+      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
+      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
       Serial.print(" } #"); Serial.println(packetnum);
 
-      stob((char*) &front_brake_pressure, packet + 16);
-      stob((char*) &rear_brake_pressure, packet + 18);
+      // Convert chars to int
+      ftos(&(fl_wheel_speed_sig.value_ref()), &fl_wheel_speed, 10.0, 0.0);
+      stob((char*) &fl_wheel_speed, packet);
+      ftos(&(fl_brake_temperature_sig.value_ref()), &fl_brake_temperature, 10.0, -40.0);
+      stob((char*) &fl_brake_temperature, packet + 2);
+      ftos(&(fr_wheel_speed_sig.value_ref()), &fr_wheel_speed, 10.0, 0.0);
+      stob((char*) &fr_wheel_speed, packet + 4);
+      ftos(&(fr_brake_temperature_sig.value_ref()), &fr_brake_temperature, 10.0, -40.0);
+      stob((char*) &fr_brake_temperature, packet + 6);
+      ftos(&(bl_wheel_speed_sig.value_ref()), &bl_wheel_speed, 10.0, 0.0);
+      stob((char*) &bl_wheel_speed, packet + 8);
+      ftos(&(bl_brake_temperature_sig.value_ref()), &bl_brake_temperature, 10.0, -40.0);
+      stob((char*) &bl_brake_temperature, packet + 10);
+      ftos(&(br_wheel_speed_sig.value_ref()), &br_wheel_speed, 10.0, 0.0);
+      stob((char*) &br_wheel_speed, packet + 12);
+      ftos(&(br_brake_temperature_sig.value_ref()), &br_brake_temperature, 10.0, -40.0);
+      stob((char*) &br_brake_temperature, packet + 14);
+
+      stob((char*) &(front_brake_pressure_sig.value_ref()), packet + 16);
+      stob((char*) &(rear_brake_pressure_sig.value_ref()), packet + 18);
 
       stob((char*) &packetnum, packet + 20);
       packetnum++;
     
       packet[22] = '\0';
 
-      Serial.print("Packet: "); Serial.println(packet);
+      // Serial.print("Packet: "); Serial.println(packet);
+      RH_RF95::printBuffer("Packet ", (uint8_t*) packet, PACKET_SIZE);
       
       // Send data and verify completion
       delay(10);
@@ -227,13 +248,21 @@ void rx_task() {
       #ifdef TELEMETRY_BASE_STATION_RX
         // Parse data
         btos((char*) &fl_wheel_speed, (char*) packet);
+        stof(&fl_wheel_speed_true, &fl_wheel_speed, 10.0, 0.0);
         btos((char*) &fl_brake_temperature, (char*) packet + 2);
+        stof(&fl_brake_temperature_true, &fl_brake_temperature, 10.0, -40.0);
         btos((char*) &fr_wheel_speed, (char*) packet + 4);
+        stof(&fr_wheel_speed_true, &fr_wheel_speed, 10.0, 0.0);
         btos((char*) &fr_brake_temperature, (char*) packet + 6);
+        stof(&fr_brake_temperature_true, &fr_brake_temperature, 10.0, -40.0);
         btos((char*) &bl_wheel_speed, (char*) packet + 8);
+        stof(&bl_wheel_speed_true, &bl_wheel_speed, 10.0, 0.0);
         btos((char*) &bl_brake_temperature, (char*) packet + 10);
+        stof(&bl_brake_temperature_true, &bl_brake_temperature, 10.0, -40.0);
         btos((char*) &br_wheel_speed, (char*) packet + 12);
+        stof(&br_wheel_speed_true, &br_wheel_speed, 10.0, 0.0);
         btos((char*) &br_brake_temperature, (char*) packet + 14);
+        stof(&br_brake_temperature_true, &br_brake_temperature, 10.0, -40.0);
 
         btos((char*) &front_brake_pressure, (char*) packet + 16);
         btos((char*) &rear_brake_pressure, (char*) packet + 18);
@@ -241,14 +270,14 @@ void rx_task() {
         btos((char*) &packetnum, (char*) packet + 20);
 
         // Print data to Serial
-        Serial.print("WS { FL: "); Serial.print(fl_wheel_speed);
-        Serial.print(" FR: "); Serial.print(fr_wheel_speed);
-        Serial.print(" BL: "); Serial.print(bl_wheel_speed);
-        Serial.print(" BR: "); Serial.print(br_wheel_speed);
-        Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature);
-        Serial.print(" FR: "); Serial.print(fr_brake_temperature);
-        Serial.print(" BL: "); Serial.print(bl_brake_temperature);
-        Serial.print(" BR: "); Serial.print(br_brake_temperature);
+        Serial.print("WS { FL: "); Serial.print(fl_wheel_speed_true);
+        Serial.print(" FR: "); Serial.print(fr_wheel_speed_true);
+        Serial.print(" BL: "); Serial.print(bl_wheel_speed_true);
+        Serial.print(" BR: "); Serial.print(br_wheel_speed_true);
+        Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature_true);
+        Serial.print(" FR: "); Serial.print(fr_brake_temperature_true);
+        Serial.print(" BL: "); Serial.print(bl_brake_temperature_true);
+        Serial.print(" BR: "); Serial.print(br_brake_temperature_true);
         Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
         Serial.print(" R: "); Serial.print(rear_brake_pressure);
         Serial.print(" } #"); Serial.println(packetnum);
