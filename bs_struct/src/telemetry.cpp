@@ -36,6 +36,8 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 // Packet number for ordering/debugging
 int16_t packetnum = 0;
 
+can_data_t sensor_vals;
+
 // Success
 bool rfm95_init_successful = true;
 
@@ -74,32 +76,18 @@ bool rfm95_init_successful = true;
   char packet[PACKET_SIZE];
 #endif
 
-#ifdef TELEMETRY_BASE_STATION_TX
-  // Raw signal data
-  uint16_t fl_wheel_speed;
-  uint16_t fl_brake_temperature;
-  uint16_t fr_wheel_speed;
-  uint16_t fr_brake_temperature;
-  uint16_t bl_wheel_speed;
-  uint16_t bl_brake_temperature;
-  uint16_t br_wheel_speed;
-  uint16_t br_brake_temperature;
+// Raw signal data
+uint16_t fl_wheel_speed;
+uint16_t fl_brake_temperature;
+uint16_t fr_wheel_speed;
+uint16_t fr_brake_temperature;
+uint16_t bl_wheel_speed;
+uint16_t bl_brake_temperature;
+uint16_t br_wheel_speed;
+uint16_t br_brake_temperature;
 
-  uint16_t front_brake_pressure;
-  uint16_t rear_brake_pressure;
-#endif
-
-// #ifdef TELEMETRY_BASE_STATION_RX
-//   // The "true" values, or formatted values for floating-point sensors
-//   float fl_wheel_speed_true;
-//   float fl_brake_temperature_true;
-//   float fr_wheel_speed_true;
-//   float fr_brake_temperature_true;
-//   float bl_wheel_speed_true;
-//   float bl_brake_temperature_true;
-//   float br_wheel_speed_true;
-//   float br_brake_temperature_true;
-// #endif
+uint16_t front_brake_pressure;
+uint16_t rear_brake_pressure;
 
 /********** PUBLIC FUNCTION DEFINITIONS **********/
 
@@ -176,6 +164,21 @@ void tx_task() {
       // Update CAN data
       can_bus.Tick();
 
+      // Re-encode floats to 
+
+      // Test: print data to Serial
+      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
+      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
+      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
+      Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
+      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
+      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
+      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
+      Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
+      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
+      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
+      Serial.print(" } #"); Serial.println(packetnum);
+
       // Convert chars to int
       ftos(&(fl_wheel_speed_sig.value_ref()), &fl_wheel_speed, 10.0, 0.0);
       stob((char*) &fl_wheel_speed, packet);
@@ -203,7 +206,7 @@ void tx_task() {
       packet[22] = '\0';
 
       // Serial.print("Packet: "); Serial.println(packet);
-      // RH_RF95::printBuffer("Packet ", (uint8_t*) packet, PACKET_SIZE);
+      RH_RF95::printBuffer("Packet ", (uint8_t*) packet, PACKET_SIZE);
       
       // Send data and verify completion
       delay(10);
@@ -219,41 +222,78 @@ void tx_task() {
  * 
  */
 void rx_task() {
-  if (rf95.available() && (rfm95_init_successful == true)) {
+  sensor_vals.fl_wheel_speed = 65;
+  sensor_vals.fl_brake_temperature = 66;
+  sensor_vals.fl_wheel_speed = 67;
+  sensor_vals.fl_brake_temperature = 68;
+  sensor_vals.fl_wheel_speed = 69;
+  sensor_vals.fl_brake_temperature = 70;
+  sensor_vals.fl_wheel_speed = 71;
+  sensor_vals.fl_brake_temperature = 72;
+  sensor_vals.front_brake_pressure = 0;
+  sensor_vals.rear_brake_pressure = 900;
+  sensor_vals.garbage_fl_val = 2.0;
+  sensor_vals.signal_data = 0;
 
-    // Should be a message for us now   
-    uint8_t packet[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(packet);
+  Serial.print("Test #"); Serial.print(packetnum++);
+  Serial.print(": size"); Serial.println(sizeof(sensor_vals));
 
-    // The buffer should match exactly the length of the message
-    if (rf95.recv(packet, &len)) {
-      // Receive successful
-      // RH_RF95::printBuffer("Received ", packet, len);
-      // Serial.print("Got: ");
-      // Serial.println((char*) packet);
+  uint8_t packet[RH_RF95_MAX_MESSAGE_LEN];
+  uint8_t len = sizeof(packet);
+  RH_RF95::printBuffer("Ser: ", packet, len);
 
-      #ifdef TELEMETRY_BASE_STATION_RX
-        // Write data to Serial
-        Serial.write(packet, PACKET_SIZE);
-      #endif
-    } else {
-      Serial.println("Receive failed");
-    }
-  }
+  // if (rf95.available() && (rfm95_init_successful == true)) {
 
-  uint8_t packet[PACKET_SIZE];
-  uint16_t* packet_sh = (uint16_t*) packet;
-  packet_sh[0] = 12;
-  packet_sh[1] = 130;
-  for (uint8_t i = 1; i < 4; ++i) {
-    packetnum = (13 * packetnum + 1) % 64; 
-    packet_sh[2 * i] = 15 + packetnum / 8; // wheel_speed
-    packet_sh[2 * i + 1] = 130; // brake_temperature
-  }
-  packet_sh[8] = 0;
-  packet_sh[9] = 0;
-  packet_sh[10] = packetnum;
-  packet[PACKET_SIZE - 1] = (uint8_t) '\0';
-  // RH_RF95::printBuffer("Ser: ", packet, PACKET_SIZE);
-  Serial.write(packet, PACKET_SIZE);
+  //   // Should be a message for us now   
+  //   uint8_t packet[RH_RF95_MAX_MESSAGE_LEN];
+  //   uint8_t len = sizeof(packet);
+
+  //   // The buffer should match exactly the length of the message
+  //   if (rf95.recv(packet, &len)) {
+  //     // Receive successful
+  //     RH_RF95::printBuffer("Received ", packet, len);
+  //     Serial.print("Got: ");
+  //     Serial.println((char*) packet);
+
+  //     #ifdef TELEMETRY_BASE_STATION_RX
+  //       // Parse data
+  //       btos((char*) &fl_wheel_speed, (char*) packet);
+  //       stof(&fl_wheel_speed_true, &fl_wheel_speed, 10.0, 0.0);
+  //       btos((char*) &fl_brake_temperature, (char*) packet + 2);
+  //       stof(&fl_brake_temperature_true, &fl_brake_temperature, 10.0, -40.0);
+  //       btos((char*) &fr_wheel_speed, (char*) packet + 4);
+  //       stof(&fr_wheel_speed_true, &fr_wheel_speed, 10.0, 0.0);
+  //       btos((char*) &fr_brake_temperature, (char*) packet + 6);
+  //       stof(&fr_brake_temperature_true, &fr_brake_temperature, 10.0, -40.0);
+  //       btos((char*) &bl_wheel_speed, (char*) packet + 8);
+  //       stof(&bl_wheel_speed_true, &bl_wheel_speed, 10.0, 0.0);
+  //       btos((char*) &bl_brake_temperature, (char*) packet + 10);
+  //       stof(&bl_brake_temperature_true, &bl_brake_temperature, 10.0, -40.0);
+  //       btos((char*) &br_wheel_speed, (char*) packet + 12);
+  //       stof(&br_wheel_speed_true, &br_wheel_speed, 10.0, 0.0);
+  //       btos((char*) &br_brake_temperature, (char*) packet + 14);
+  //       stof(&br_brake_temperature_true, &br_brake_temperature, 10.0, -40.0);
+
+  //       btos((char*) &front_brake_pressure, (char*) packet + 16);
+  //       btos((char*) &rear_brake_pressure, (char*) packet + 18);
+
+  //       btos((char*) &packetnum, (char*) packet + 20);
+
+  //       // Print data to Serial
+  //       Serial.print("WS { FL: "); Serial.print(fl_wheel_speed_true);
+  //       Serial.print(" FR: "); Serial.print(fr_wheel_speed_true);
+  //       Serial.print(" BL: "); Serial.print(bl_wheel_speed_true);
+  //       Serial.print(" BR: "); Serial.print(br_wheel_speed_true);
+  //       Serial.print(" } BT { FL: "); Serial.print(fl_brake_temperature_true);
+  //       Serial.print(" FR: "); Serial.print(fr_brake_temperature_true);
+  //       Serial.print(" BL: "); Serial.print(bl_brake_temperature_true);
+  //       Serial.print(" BR: "); Serial.print(br_brake_temperature_true);
+  //       Serial.print(" } BP: { F: "); Serial.print(front_brake_pressure);
+  //       Serial.print(" R: "); Serial.print(rear_brake_pressure);
+  //       Serial.print(" } #"); Serial.println(packetnum);
+  //     #endif
+  //   } else {
+  //     Serial.println("Receive failed");
+  //   }
+  // }
 }
