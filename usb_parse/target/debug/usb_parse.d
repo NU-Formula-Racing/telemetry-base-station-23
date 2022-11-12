@@ -1,0 +1,1 @@
+/Users/offi-dtrguo-cial/Private\ Documents/Uni/Formula/telemetry-base-station-23/usb_parse/target/debug/usb_parse: /Users/offi-dtrguo-cial/Private\ Documents/Uni/Formula/telemetry-base-station-23/usb_parse/src/main.rs

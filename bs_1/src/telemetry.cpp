@@ -176,6 +176,19 @@ void tx_task() {
       // Update CAN data
       can_bus.Tick();
 
+      // Test: print data to Serial
+      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
+      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
+      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
+      Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
+      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
+      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
+      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
+      Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
+      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
+      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
+      Serial.print(" } #"); Serial.println(packetnum);
+
       // Convert chars to int
       ftos(&(fl_wheel_speed_sig.value_ref()), &fl_wheel_speed, 10.0, 0.0);
       stob((char*) &fl_wheel_speed, packet);
@@ -228,32 +241,32 @@ void rx_task() {
     // The buffer should match exactly the length of the message
     if (rf95.recv(packet, &len)) {
       // Receive successful
-      // RH_RF95::printBuffer("Received ", packet, len);
+      RH_RF95::printBuffer("Received ", packet, len);
       // Serial.print("Got: ");
       // Serial.println((char*) packet);
 
       #ifdef TELEMETRY_BASE_STATION_RX
         // Write data to Serial
-        Serial.write(packet, PACKET_SIZE);
+        // Serial.write(packet, PACKET_SIZE);
       #endif
     } else {
       Serial.println("Receive failed");
     }
   }
 
-  uint8_t packet[PACKET_SIZE];
-  uint16_t* packet_sh = (uint16_t*) packet;
-  packet_sh[0] = 12;
-  packet_sh[1] = 130;
-  for (uint8_t i = 1; i < 4; ++i) {
-    packetnum = (13 * packetnum + 1) % 64; 
-    packet_sh[2 * i] = 15 + packetnum / 8; // wheel_speed
-    packet_sh[2 * i + 1] = 130; // brake_temperature
-  }
-  packet_sh[8] = 0;
-  packet_sh[9] = 0;
-  packet_sh[10] = packetnum;
-  packet[PACKET_SIZE - 1] = (uint8_t) '\0';
-  // RH_RF95::printBuffer("Ser: ", packet, PACKET_SIZE);
-  Serial.write(packet, PACKET_SIZE);
+  // uint8_t packet[PACKET_SIZE];
+  // uint16_t* packet_sh = (uint16_t*) packet;
+  // packet_sh[0] = 12;
+  // packet_sh[1] = 130;
+  // for (uint8_t i = 1; i < 4; ++i) {
+  //   packetnum = (13 * packetnum + 1) % 64; 
+  //   packet_sh[2 * i] = 15 + packetnum / 8; // wheel_speed
+  //   packet_sh[2 * i + 1] = 130; // brake_temperature
+  // }
+  // packet_sh[8] = 0;
+  // packet_sh[9] = 0;
+  // packet_sh[10] = packetnum;
+  // packet[PACKET_SIZE - 1] = (uint8_t) '\0';
+  // // RH_RF95::printBuffer("Ser: ", packet, PACKET_SIZE);
+  // Serial.write(packet, PACKET_SIZE);
 }
