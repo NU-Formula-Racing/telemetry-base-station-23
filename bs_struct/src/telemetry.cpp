@@ -25,7 +25,7 @@
 /* Packet size */
 // Size of data packet to be sent over LoRa
 // Math is conducted below:
-#define PACKET_SIZE 23
+#define PACKET_SIZE 27
 
 /********** VARIABLES **********/
 
@@ -222,25 +222,31 @@ void tx_task() {
  * 
  */
 void rx_task() {
+  // Temporary garbage; once TX is working again
+  // consider sending actual CAN data instead; also test
+  // how the TX packs data.
   sensor_vals.fl_wheel_speed = 65;
   sensor_vals.fl_brake_temperature = 66;
-  sensor_vals.fl_wheel_speed = 67;
-  sensor_vals.fl_brake_temperature = 68;
-  sensor_vals.fl_wheel_speed = 69;
-  sensor_vals.fl_brake_temperature = 70;
-  sensor_vals.fl_wheel_speed = 71;
-  sensor_vals.fl_brake_temperature = 72;
+  sensor_vals.fr_wheel_speed = 67;
+  sensor_vals.fr_brake_temperature = 68;
+  sensor_vals.bl_wheel_speed = 69;
+  sensor_vals.bl_brake_temperature = 70;
+  sensor_vals.br_wheel_speed = 71;
+  sensor_vals.br_brake_temperature = 72;
   sensor_vals.front_brake_pressure = 0;
   sensor_vals.rear_brake_pressure = 900;
   sensor_vals.garbage_fl_val = 2.0;
-  sensor_vals.signal_data = 0;
+  sensor_vals.packetnum = packetnum;
+  sensor_vals.signal_data = 'A' + (uint8_t) (packetnum++ % 26);
 
-  Serial.print("Test #"); Serial.print(packetnum++);
-  Serial.print(": size"); Serial.println(sizeof(sensor_vals));
+  // Serial.print("Test #"); Serial.print(packetnum++);
+  // Serial.print(": size"); Serial.println(sizeof(sensor_vals));
 
-  uint8_t packet[RH_RF95_MAX_MESSAGE_LEN];
-  uint8_t len = sizeof(packet);
-  RH_RF95::printBuffer("Ser: ", packet, len);
+  // uint8_t packet[RH_RF95_MAX_MESSAGE_LEN];
+  // uint8_t len = sizeof(packet);
+  // RH_RF95::printBuffer("Ser: ", (uint8_t*) &sensor_vals, sizeof(sensor_vals));
+  
+  Serial.write((uint8_t*) &sensor_vals, PACKET_SIZE);
 
   // if (rf95.available() && (rfm95_init_successful == true)) {
 

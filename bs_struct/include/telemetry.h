@@ -24,7 +24,7 @@
 #define RF95_FREQ 915.0
 
 /********** STRUCTS **********/
-#pragma pack(2)
+#pragma pack(1)
 typedef struct CAN_DATA {
   uint16_t fl_wheel_speed;
   uint16_t fl_brake_temperature;
