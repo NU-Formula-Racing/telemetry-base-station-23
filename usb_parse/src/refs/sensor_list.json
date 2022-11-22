@@ -1,0 +1,50 @@
+{
+  "fl_wheel_speed": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": 0
+  },
+  "fl_brake_temperature": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": -40
+  },
+  "fr_wheel_speed": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": 0
+  },
+  "fr_brake_temperature": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": -40
+  },
+  "bl_wheel_speed": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": 0
+  },
+  "bl_brake_temperature": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": -40
+  },
+  "br_wheel_speed": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": 0
+  },
+  "br_brake_temperature": {
+    "type": "float",
+    "scale": 0.1,
+    "bias": -40
+  },
+  "front_brake_pressure": {
+    "type": "int",
+    "bias": 0
+  },
+  "rear_brake_pressure": {
+    "type": "int",
+    "bias": 0
+  }
+}
