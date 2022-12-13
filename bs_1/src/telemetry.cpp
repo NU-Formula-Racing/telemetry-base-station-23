@@ -25,7 +25,7 @@
 /* Packet size */
 // Size of data packet to be sent over LoRa
 // Math is conducted below:
-#define PACKET_SIZE 23
+#define PACKET_SIZE 23 // 21
 
 /********** VARIABLES **********/
 
@@ -73,6 +73,8 @@ bool rfm95_init_successful = true;
   // Common across send and receive functions
   char packet[PACKET_SIZE];
 #endif
+
+// char packet[PACKET_SIZE];
 
 #ifdef TELEMETRY_BASE_STATION_TX
   // Raw signal data
@@ -177,17 +179,17 @@ void tx_task() {
       can_bus.Tick();
 
       // Test: print data to Serial
-      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
-      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
-      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
-      Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
-      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
-      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
-      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
-      Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
-      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
-      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
-      Serial.print(" } #"); Serial.println(packetnum);
+      // Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
+      // Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
+      // Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
+      // Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
+      // Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
+      // Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
+      // Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
+      // Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
+      // Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
+      // Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
+      // Serial.print(" } #"); Serial.println(packetnum);
 
       // Convert chars to int
       ftos(&(fl_wheel_speed_sig.value_ref()), &fl_wheel_speed, 10.0, 0.0);
@@ -269,4 +271,29 @@ void rx_task() {
   // packet[PACKET_SIZE - 1] = (uint8_t) '\0';
   // // RH_RF95::printBuffer("Ser: ", packet, PACKET_SIZE);
   // Serial.write(packet, PACKET_SIZE);
+
+  // uint8_t packet[21];
+  // uint16_t* packet_sh = (uint16_t*) packet;
+  // uint8_t i = 0;
+  // for (; i < 8; ++i) { // Float
+  //   packetnum = (31 * packetnum + 2) % 223; 
+  //   packet_sh[i] += 3 * (packetnum % 5 - 2);
+  //   if (packet_sh[i] > 160) {
+  //     packet_sh[i] = 160;
+  //   } else if (packet_sh[i] < 0) {
+  //     packet_sh[i] = 0;
+  //   }
+  // }
+  // for (; i < 10; ++i) { // Int
+  //   packetnum = (31 * packetnum + 2) % 223; 
+  //   packet_sh[i] += packetnum % 5 - 2;
+  //   if (packet_sh[i] > 180) {
+  //     packet_sh[i] = 180;
+  //   } else if (packet_sh[i] < 30) {
+  //     packet_sh[i] = 30;
+  //   }
+  // }
+  // packet[PACKET_SIZE - 1] = '\0';
+  // // RH_RF95::printBuffer("Ser: ", packet, PACKET_SIZE);
+  // Serial.write((uint8_t*) packet, PACKET_SIZE);
 }
