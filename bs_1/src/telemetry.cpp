@@ -41,7 +41,7 @@ bool rfm95_init_successful = true;
 
 #ifdef TELEMETRY_BASE_STATION_TX
   // Initialize bus
-  TeensyCAN<1> can_bus{};
+  TeensyCAN<CAN_BUS_LO> can_bus{};
 
   /* CAN data buffers */ 
   // Each signal is 16-bit with 10 sigs in total

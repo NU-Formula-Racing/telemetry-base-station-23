@@ -41,7 +41,7 @@ bool rfm95_init_successful = true;
 
 #ifdef TELEMETRY_BASE_STATION_TX
   // Initialize bus
-  TeensyCAN<1> can_bus{};
+  TeensyCAN<CAN_BUS_LO> can_bus{};
 
   /* CAN data buffers */ 
   // Each signal is 16-bit with 10 sigs in total
@@ -177,17 +177,17 @@ void tx_task() {
       // Re-encode floats to 
 
       // Test: print data to Serial
-      Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
-      Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
-      Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
-      Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
-      Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
-      Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
-      Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
-      Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
-      Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
-      Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
-      Serial.print(" } #"); Serial.println(packetnum);
+      // Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
+      // Serial.print(" FR: "); Serial.print(float(fr_wheel_speed_sig));
+      // Serial.print(" BL: "); Serial.print(float(bl_wheel_speed_sig));
+      // Serial.print(" BR: "); Serial.print(float(br_wheel_speed_sig));
+      // Serial.print(" } BT { FL: "); Serial.print(float(fl_brake_temperature_sig));
+      // Serial.print(" FR: "); Serial.print(float(fr_brake_temperature_sig));
+      // Serial.print(" BL: "); Serial.print(float(bl_brake_temperature_sig));
+      // Serial.print(" BR: "); Serial.print(float(br_brake_temperature_sig));
+      // Serial.print(" } BP: { F: "); Serial.print(uint16_t(front_brake_pressure_sig));
+      // Serial.print(" R: "); Serial.print(uint16_t(rear_brake_pressure_sig));
+      // Serial.print(" } #"); Serial.println(packetnum);
 
       // Convert chars to int
       ftos(&(fl_wheel_speed_sig.value_ref()), &fl_wheel_speed, 10.0, 0.0);

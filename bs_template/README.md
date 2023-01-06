@@ -29,4 +29,10 @@ in this file.
 
 This file will not be copied using this script, as each subsequent project should
 be documented uniquely and accordingly to its purpose. Refer to `lora_can_2/` for
-information about the original project these files come from.
+information about the original project these files come from, though some of these
+files have been modified based on results from previous projects.
+
+Update history:
+
+- 06/01/23: Commented out excess Serial prints on TX, macro-abstracted CAN bus number
+  based on modifications from contemporary project bs_1/.
