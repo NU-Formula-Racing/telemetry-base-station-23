@@ -167,7 +167,7 @@ void deserialize(message_id_t* msg_id, fake_sensors_t* sensor_struct, uint8_t* d
   // if (msg_id == 0) {
   //   return;
   // }
-
+s
   // Raw data alias for struct and buffer
   uint8_t* sensor_data_ptr = (uint8_t*) sensor_struct;
   uint8_t* buf_ptr = data_buf;

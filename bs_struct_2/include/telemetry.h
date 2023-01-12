@@ -37,8 +37,18 @@ extern bool rfm95_init_successful;
 extern int16_t packetnum;  // packet counter, we increment per xmission
 
 /********** PUBLIC FUNCTION PROTOTYPES **********/
+
+/* Setup (for both boards) */
 bool telemetry_setup();
+
+/* Transceiver */
+void tx_tick_fast();
+void tx_tick_slow();
+void tx_send();
+
 void tx_task();
+
+/* Receiver */
 void rx_task();
 
 #endif

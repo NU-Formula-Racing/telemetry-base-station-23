@@ -13,6 +13,7 @@
 #include "telemetry.h"
 
 #include "target.h"
+#include "sensor_vals.h"
 #include "ser_des.h"
 
 #ifdef TELEMETRY_BASE_STATION_TX
@@ -32,9 +33,6 @@
 /* RadioHead */
 // Driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
-
-// Packet number for ordering/debugging
-int16_t packetnum = 0;
 
 // Success
 bool rfm95_init_successful = true;
@@ -73,6 +71,19 @@ bool rfm95_init_successful = true;
   // Common across send and receive functions
   char packet[PACKET_SIZE];
 #endif
+
+/* Data objects */
+
+// Sensor value storage struct
+sensor_vals_t sensors = {
+  .fast
+}
+
+// Data buffer
+uint8_t buf[PACKET_SIZE];
+
+// Packet number for ordering/debugging
+uint16_t packetnum = 0;
 
 // Raw signal data
 uint16_t fl_wheel_speed;
@@ -144,21 +155,6 @@ bool telemetry_setup() {
     can_bus.RegisterRXMessage(brake_pressure_msg);
 
     can_bus.Initialize(ICAN::BaudRate::kBaud1M);
-  #endif
-
-  #ifdef TELEMETRY_BASE_STATION_RX
-    // Dummy values; test if current pipeline allows for RX comp
-    // fl_wheel_speed = 10.0;
-    // fl_brake_temperature = 1.0;
-    // fr_wheel_speed = 2.0;
-    // fr_brake_temperature = 3.0;
-    // bl_wheel_speed = 4.0;
-    // bl_brake_temperature = 5.0;
-    // br_wheel_speed = 6.0;
-    // br_brake_temperature = 7.0;
-
-    // front_brake_pressure = 8;
-    // rear_brake_pressure = 9;
   #endif
 
   return rfm95_init_successful;
