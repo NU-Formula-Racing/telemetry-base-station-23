@@ -15,6 +15,13 @@ typedef struct STRUCT_OF_PTRS {
   double** vec_f64;
 } stars_t;
 
+// Reference array containing sizes of each sensor value
+const uint8_t STAR_BYTES[3] = {
+  sizeof(uint16_t),
+  sizeof(float),
+  sizeof(double)
+};
+
 // Function to access pointers in struct
 void starclan(stars_t* death);
 
@@ -107,9 +114,9 @@ void starclan(stars_t* death) {
   // but must be treated as a byte pointer to allow for the arithmetic to work
   uint8_t* ptr = (uint8_t*) death;
 
-  // Retrieve target values
+  /* Retrieve target values directly */
   uint16_t cloudkit = **((uint16_t**) ptr); // Must double dereference for arithmetic to work
-  ptr += PTR_SIZE;
+  ptr += PTR_SIZE; // Move pointer to adjacent address of pointer
   float sandstorm =  **((float**) ptr);
   ptr += PTR_SIZE;
   double firestar = *(**((double***) ptr) + 2); // Cannot index as array (gives segfault), must use pointer arithmetic
@@ -117,8 +124,41 @@ void starclan(stars_t* death) {
   // Display targeted values
   std::cout << "u16: " << cloudkit << "\nf32: " << sandstorm << "\nf64: " << firestar << " from dyn array" << std::endl;
 
+  /* Access byte representation */
   ptr = (uint8_t*) death;
   uint8_t* bytes = *((uint8_t**) ptr);
 
   std::cout << "Byte rep: " << unsigned(*bytes) << ", " << unsigned(*(bytes + 1)) << std::endl;
+
+  /* Copy bytes to array */
+  // Using borrowing alias `ptr` for struct
+  // Using `bytes` as datatype byte alias
+  uint8_t buffer[20]; // Serialization data buffer
+  for (size_t i = 0; i < 20; ++i) {
+    buffer[i] = 0; // Initialized to 0 for precise testing
+  }
+  uint8_t* buf_ptr = buffer; // Borrowing alias for buffer
+
+  // Serialize data
+  // First by copying the number of bytes equal to the datatype size,
+  // Then shifting the reference pointer and recasting the alias
+  for (size_t i = 0; i < STAR_BYTES[0]; ++i) {
+    *(buf_ptr++) = *(bytes++);
+  }
+  ptr += PTR_SIZE;
+  bytes = *((uint8_t**) ptr);
+
+  for (size_t i = 0; i < STAR_BYTES[1]; ++i) {
+    *(buf_ptr++) = *(bytes++);
+  }
+  ptr += PTR_SIZE;
+  bytes = *((uint8_t**) ptr);
+
+  // Verify output
+  // A Mac OS Intel uses BE representation
+  std::cout << "Byte array: ";
+  for (size_t i = 0; i < 20; ++i) {
+    std::cout << unsigned(buffer[i]) << " ";
+  }
+  std::cout << std::endl;
 }

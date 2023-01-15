@@ -31,8 +31,9 @@
 
 /********** STRUCTS **********/
 
-// All structs have a value representation (which will be used for direct ser/des)
-// and a reference representation to avoid redundant copying in TX.
+// All structs have a value representation (which will be used for direct ser/des),
+// a reference representation to avoid redundant copying in TX,
+// and a size chart used in conjunction with the reference representation.
 // Both need to be maintained as sensor demands change.
 
 /* Fast updating sensors */
@@ -54,18 +55,32 @@ typedef struct FAST_SENSORS fast_sensors_t;
 #ifdef TELEMETRY_BASE_STATION_TX
 
 struct FAST_SENSORS_REF {
-  float& fl_wheel_speed;
-  float& fl_brake_temperature;
-  float& fr_wheel_speed;
-  float& fr_brake_temperature;
-  float& bl_wheel_speed;
-  float& bl_brake_temperature;
-  float& br_wheel_speed;
-  float& br_brake_temperature;
-  uint16_t& front_brake_pressure;
-  uint16_t& rear_brake_pressure;
+  float* fl_wheel_speed;
+  float* fl_brake_temperature;
+  float* fr_wheel_speed;
+  float* fr_brake_temperature;
+  float* bl_wheel_speed;
+  float* bl_brake_temperature;
+  float* br_wheel_speed;
+  float* br_brake_temperature;
+  uint16_t* front_brake_pressure;
+  uint16_t* rear_brake_pressure;
 };
 typedef struct FAST_SENSORS_REF fast_sensors_ref_t;
+
+#define NUM_FAST_SENSORS 10
+const size_t fast_sensors_size[NUM_FAST_SENSORS] = {
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(uint16_t),
+  sizeof(uint16_t)
+};
 
 #endif
 
@@ -79,9 +94,14 @@ typedef struct MED_SENSORS med_sensors_t; // Currently omitted for simplicity
 #ifdef TELEMETRY_BASE_STATION_TX
 
 struct MED_SENSORS_REF {
-  uint16_t& fake_value;
+  uint16_t* fake_value;
 };
 typedef struct MED_SENSORS_REF med_sensors_ref_t;
+
+#define NUM_MED_SENSORS 1
+const size_t med_sensors_size[NUM_MED_SENSORS] = {
+  sizeof(uint16_t)
+};
 
 #endif
 
@@ -95,9 +115,14 @@ typedef struct SLOW_SENSORS slow_sensors_t;
 #ifdef TELEMETRY_BASE_STATION_TX
 
 struct SLOW_SENSORS_REF {
-  uint16_t& fake_value;
+  uint16_t* fake_value;
 };
 typedef struct SLOW_SENSORS_REF slow_sensors_ref_t;
+
+#define NUM_SLOW_SENSORS 1
+const size_t slow_sensors_size[NUM_SLOW_SENSORS] = {
+  sizeof(uint16_t)
+};
 
 #endif
 
@@ -113,6 +138,8 @@ typedef struct SENSOR_VALS sensor_vals_t;
 
 #ifdef TELEMETRY_BASE_STATION_TX
 
+// All regularly updated sensors use pointers to facilitate automation of serialization.
+// All conditional values use references for safety, as each are handled individually.
 struct SENSOR_REFERENCES {
   fast_sensor_refs_t fast;
   med_sensor_refs_t med;
@@ -124,13 +151,16 @@ typedef struct SENSOR_REFERENCES sensor_refs_t;
 #endif
 
 /********** DEFINES **********/
-/* Byte size */
+/* Byte size of sensor vals */
 #define FAST_SENSORS_LEN sizeof(fast_sensors_t)
 #define MED_SENSORS_LEN sizeof(med_sensors_t)
 #define SLOW_SENSORS_LEN sizeof(slow_sensors_t)
 #define SENSOR_VALS_LEN sizeof(sensor_vals_t)
 
-#define SENSOR_PTR_LEN sizeof(float*)
+/* Size of pointer representation */
+#ifdef TELEMETRY_BASE_STATION_TX
+  #define SENSOR_PTR_LEN sizeof(float*)
+#endif
 
 /********** TYPE ALIASES **********/
 /* Update flag signal */

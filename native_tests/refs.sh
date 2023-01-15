@@ -1,2 +1,2 @@
-g++ -o refs refs.cpp 
+g++ -o refs refs.cpp
 ./refs

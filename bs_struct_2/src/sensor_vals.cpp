@@ -32,8 +32,13 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
     return;
   }
 
-  // Pointer casting to allow for individual bytes in the structs to be accessed
-  uint8_t* sensor_data_ptr = (uint8_t*) sensor_vals;
+  // Pointer casting to allow for pointer arithmetic from the reference representation
+  // Even though this is supposed to be a pointer to a pointer, it must be treated as a byte pointer
+  // for the arithmetic to work (and for deserialization to be automated)
+  uint8_t* sensor_data_ptr = (uint8_t*) sensor_refs;
+
+  // Casting to access individual bytes from each of the pointers to the sensors
+  uint8_t* sensor_data_bytes;
 
   // Borrowing visitor for buffer
   uint8_t* buf_ptr = data_buf;
@@ -49,23 +54,27 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
 
   /* Data serialization */
   // Dependent on code and the FMS-C priority
-  size_t i;
+  size_t i, j;
 
   // Regular updating sensors
   if (mc & 0b1) {
-    for (i = 0; i < FAST_SENSORS_LEN; ++i) {
+    for (i = 0; i < NUM_FAST_SENSORS; ++i) {
+      sensor_data_bytes = *((uint8_t**) sensor_data_ptr);;
+      for (j = 0; j < fast_sensors_size[i]; ++j) {
+        *(buf_ptr++) = *(sensor_data_ptr++);
+        ++*buf_len;
+      }
+      sensor_data_ptr += SENSOR_PTR_LEN;
+    }
+  }
+
+  if (mc & 0b10) {
+    sensor_data_ptr = (uint8_t*) sensor_vals + FAST_SENSORS_LEN;
+    for (i = 0; i < MED_SENSORS_LEN; ++i) {
       *(buf_ptr++) = *(sensor_data_ptr++);
       ++*buf_len;
     }
   }
-
-  // if (mc & 0b10) {
-  //   sensor_data_ptr = (uint8_t*) sensor_vals + FAST_SENSORS_LEN;
-  //   for (i = 0; i < MED_SENSORS_LEN; ++i) {
-  //     *(buf_ptr++) = *(sensor_data_ptr++);
-  //     ++*buf_len;
-  //   }
-  // }
 
   if (mc & 0b100) {
     sensor_data_ptr = (uint8_t*) sensor_vals + FAST_SENSORS_LEN /* + MED_SENSORS_LEN */;
@@ -89,7 +98,7 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
 #ifdef TELEMETRY_BASE_STATION_RX
 
 void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_buf) {
-  // Recasts for struct and buffer
+  // Recasts for struct and buffer to allow for access to individual bytes
   uint8_t* sensor_data_ptr = (uint8_t*) sensor_vals;
   uint8_t* buf_ptr = data_buf;
 
