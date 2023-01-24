@@ -34,7 +34,7 @@ extern RH_RF95 rf95;
 
 extern bool rfm95_init_successful;
 
-extern int16_t packetnum;  // packet counter, we increment per xmission
+extern uint16_t packetnum;  // packet counter, we increment per xmission
 
 /********** PUBLIC FUNCTION PROTOTYPES **********/
 

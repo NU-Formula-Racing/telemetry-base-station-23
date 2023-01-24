@@ -2,21 +2,24 @@
 
 #ifdef TELEMETRY_BASE_STATION_TX
 
-void get_msg_code(message_code_t* mc, flag_t* fast_flag, flag_t* slow_flag, uint8_t* cond_flag) {
+void get_msg_code(message_code_t* mc, flag_t* fast_flag, /* flag_t* med_flag, */ flag_t* slow_flag, uint32_t* cond_flag) {
+  // Reset message code
+  *mc = 0;
+
   // Update message code, then reset flags
   if (*fast_flag) {
     *mc |= 0b1;
-    *fast_flag = 0;
+    *fast_flag &= 0;
   }
 
   // if (*med_flag) {
   //   *mc |= 0b10;
-  //   *med_flag = 0;
+  //   *med_flag &= 0;
   // }
 
   if (*slow_flag) {
     *mc |= 0b100;
-    *slow_flag = 0;
+    *slow_flag &= 0;
   }
 
   if (*cond_flag) {
@@ -57,45 +60,54 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
   size_t i, j;
 
   // Regular updating sensors
-  if (mc & 0b1) {
+  if (*mc & 0b1) {
+    sensor_data_ptr = (uint8_t*) &(sensor_refs->fast);
     for (i = 0; i < NUM_FAST_SENSORS; ++i) {
-      sensor_data_bytes = *((uint8_t**) sensor_data_ptr);;
+      sensor_data_bytes = *((uint8_t**) sensor_data_ptr);
       for (j = 0; j < fast_sensors_size[i]; ++j) {
-        *(buf_ptr++) = *(sensor_data_ptr++);
+        *(buf_ptr++) = *(sensor_data_bytes++);
         ++*buf_len;
       }
       sensor_data_ptr += SENSOR_PTR_LEN;
     }
   }
 
-  if (mc & 0b10) {
-    sensor_data_ptr = (uint8_t*) sensor_vals + FAST_SENSORS_LEN;
-    for (i = 0; i < MED_SENSORS_LEN; ++i) {
-      *(buf_ptr++) = *(sensor_data_ptr++);
-      ++*buf_len;
-    }
-  }
+  // if (*mc & 0b10) {
+  //   sensor_data_ptr = (uint8_t*) &(sensor_refs->med);
+  //   for (i = 0; i < NUM_MED_SENSORS; ++i) {
+  //     sensor_data_bytes = *((uint8_t**) sensor_data_ptr);
+  //     for (j = 0; j < med_sensors_size[i]; ++j) {
+  //       *(buf_ptr++) = *(sensor_data_bytes++);
+  //       ++*buf_len;
+  //     }
+  //     sensor_data_ptr += SENSOR_PTR_LEN;
+  //   }
+  // }
 
-  if (mc & 0b100) {
-    sensor_data_ptr = (uint8_t*) sensor_vals + FAST_SENSORS_LEN /* + MED_SENSORS_LEN */;
-    for (i = 0; i < SLOW_SENSORS_LEN; ++i) {
-      *(buf_ptr++) = *(sensor_data_ptr++);
-      ++*buf_len;
+  if (*mc & 0b100) {
+    sensor_data_ptr = (uint8_t*) &(sensor_refs->slow);
+    for (i = 0; i < NUM_SLOW_SENSORS; ++i) {
+      sensor_data_bytes = *((uint8_t**) sensor_data_ptr);
+      for (j = 0; j < slow_sensors_size[i]; ++j) {
+        *(buf_ptr++) = *(sensor_data_bytes++);
+        ++*buf_len;
+      }
+      sensor_data_ptr += SENSOR_PTR_LEN;
     }
   }
 
   // Conditional sensors
   // Handled individually
-  if (mc & 0b10000) {
-    sensor_data_ptr = (uint8_t*) sensor_vals + FAST_SENSORS_LEN /* + MED_SENSORS_LEN */ + SLOW_SENSORS_LEN;
-    *(buf_ptr++) = *(sensor_data_ptr);
-    ++*buf_len;
+  if (*mc & 0b10000) {
+    sensor_data_bytes = (uint8_t*) &(sensor_refs->control);
+    for (i = 0; i < sizeof(sensor_refs->control); ++i) {
+      *(buf_ptr++) = sensor_data_bytes;
+      ++*buf_len;
+    }
   }
 }
 
 #endif
-
-#ifdef TELEMETRY_BASE_STATION_RX
 
 void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_buf) {
   // Recasts for struct and buffer to allow for access to individual bytes
@@ -136,5 +148,3 @@ void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_b
     *(sensor_data_ptr) = *(buf_ptr++);
   }
 }
-
-#endif

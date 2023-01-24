@@ -28,6 +28,7 @@
 
 /********** INCLUDES **********/
 #include "telemetry.h"
+#include "target.h"
 
 /********** STRUCTS **********/
 
@@ -49,6 +50,7 @@ struct FAST_SENSORS {
   float br_brake_temperature;
   uint16_t front_brake_pressure;
   uint16_t rear_brake_pressure;
+  uint16_t packetnum;
 };
 typedef struct FAST_SENSORS fast_sensors_t;
 
@@ -65,10 +67,11 @@ struct FAST_SENSORS_REF {
   float* br_brake_temperature;
   uint16_t* front_brake_pressure;
   uint16_t* rear_brake_pressure;
+  uint16_t* packetnum;
 };
-typedef struct FAST_SENSORS_REF fast_sensors_ref_t;
+typedef struct FAST_SENSORS_REF fast_sensor_refs_t;
 
-#define NUM_FAST_SENSORS 10
+#define NUM_FAST_SENSORS 11
 const size_t fast_sensors_size[NUM_FAST_SENSORS] = {
   sizeof(float),
   sizeof(float),
@@ -78,6 +81,7 @@ const size_t fast_sensors_size[NUM_FAST_SENSORS] = {
   sizeof(float),
   sizeof(float),
   sizeof(float),
+  sizeof(uint16_t),
   sizeof(uint16_t),
   sizeof(uint16_t)
 };
@@ -96,7 +100,7 @@ typedef struct MED_SENSORS med_sensors_t; // Currently omitted for simplicity
 struct MED_SENSORS_REF {
   uint16_t* fake_value;
 };
-typedef struct MED_SENSORS_REF med_sensors_ref_t;
+typedef struct MED_SENSORS_REF med_sensor_refs_t;
 
 #define NUM_MED_SENSORS 1
 const size_t med_sensors_size[NUM_MED_SENSORS] = {
@@ -117,7 +121,7 @@ typedef struct SLOW_SENSORS slow_sensors_t;
 struct SLOW_SENSORS_REF {
   uint16_t* fake_value;
 };
-typedef struct SLOW_SENSORS_REF slow_sensors_ref_t;
+typedef struct SLOW_SENSORS_REF slow_sensor_refs_t;
 
 #define NUM_SLOW_SENSORS 1
 const size_t slow_sensors_size[NUM_SLOW_SENSORS] = {
@@ -132,7 +136,7 @@ struct SENSOR_VALS {
   fast_sensors_t fast;
   // med_sensors_t med;
   slow_sensors_t slow;
-  uint16_t packetnum;
+  uint8_t control;
 };
 typedef struct SENSOR_VALS sensor_vals_t;
 
@@ -142,9 +146,9 @@ typedef struct SENSOR_VALS sensor_vals_t;
 // All conditional values use references for safety, as each are handled individually.
 struct SENSOR_REFERENCES {
   fast_sensor_refs_t fast;
-  med_sensor_refs_t med;
+  // med_sensor_refs_t med;
   slow_sensor_refs_t slow;
-  uint16_t& packetnum;
+  uint8_t* control;
 };
 typedef struct SENSOR_REFERENCES sensor_refs_t;
 
@@ -194,7 +198,7 @@ typedef uint16_t message_code_t;
  * @param slow_flag     Flag for slow sensors
  * @param cond_flag     Aggregate signal for any number of cond sensors
  */
-void get_msg_code(message_code_t* mc, flag_t* fast_flag, flag_t* slow_flag, uint32_t* cond_flag);
+void get_msg_code(message_code_t* mc, flag_t* fast_flag, /* flag_t* med_flag, */ flag_t* slow_flag, uint32_t* cond_flag);
 
 /**
  * @brief Format data from a struct to fit a message packet buffer.
@@ -208,8 +212,6 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
 #endif
 
 /* Receiver (base board) */
-#ifdef TELEMETRY_BASE_STATION_RX
-
 /**
  * @brief Reformat buffered data to update the values within a struct.
  * @param mc            Type/amount of data to be sent, dictating where data should be placed
@@ -217,7 +219,5 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
  * @param data_buf      Message buffer received, containing the message type and payload
  */
 void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_buf);
-
-#endif
 
 #endif
