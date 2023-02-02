@@ -252,22 +252,23 @@ void tx_send() {
       get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
       
       // // Serialize the data
-      // serialize(&data_id, &sensor_refs, buf, &buf_len);
+      serialize(&data_id, &sensor_refs, buf, &buf_len);
 
-    // buf[0] = (uint8_t) data_id;
-    buf_len = 1;
-    // buf[buf_len++] = 'a'; buf[buf_len++] = 'b';
-    if (data_id & 0b1) {
-      buf[buf_len++] = 'a';
-    }
-    if (data_id & 0b100) {
-      buf[buf_len++] = 'b';
-    }
-    buf[0] = buf_len;
+    // // Variable length impromptu test; remove when possible
+    // // buf[0] = (uint8_t) data_id;
+    // buf_len = 1;
+    // // buf[buf_len++] = 'a'; buf[buf_len++] = 'b';
+    // if (data_id & 0b1) {
+    //   buf[buf_len++] = 'a';
+    // }
+    // if (data_id & 0b100) {
+    //   buf[buf_len++] = 'b';
+    // }
+    // buf[0] = buf_len;
 
       // Send data and verify completion
       delay(10);
-      rf95.send(buf, buf_len);
+      rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
       delay(10);
       rf95.waitPacketSent();
     #endif
@@ -351,7 +352,7 @@ void rx_task() {
         // Receive successful
         RH_RF95::printBuffer("Received ", buf, buf_len);
         Serial.print("Got: "); Serial.println((char*) buf);
-        Serial.print("Len: "); Serial.println(buf_len);
+        // Serial.print("Len: "); Serial.println(buf_len);
         // if (buf[0] & 0b1)
         //   Serial.println("RD");
 
@@ -359,19 +360,19 @@ void rx_task() {
         deserialize(&data_id, &sensor_vals, buf);
 
         // Print data to Serial
-        // Serial.print("WS { FL: "); Serial.print(sensor_vals.fast.fl_wheel_speed);
-        // Serial.print(" FR: "); Serial.print(sensor_vals.fast.fr_wheel_speed);
-        // Serial.print(" BL: "); Serial.print(sensor_vals.fast.bl_wheel_speed);
-        // Serial.print(" BR: "); Serial.print(sensor_vals.fast.br_wheel_speed);
-        // Serial.print(" BT { FL: "); Serial.print(sensor_vals.fast.fl_brake_temperature);
-        // Serial.print(" FR: "); Serial.print(sensor_vals.fast.fr_brake_temperature);
-        // Serial.print(" BL: "); Serial.print(sensor_vals.fast.bl_brake_temperature);
-        // Serial.print(" BR: "); Serial.print(sensor_vals.fast.br_brake_temperature);
-        // Serial.print(" } BP: { F: "); Serial.print(sensor_vals.fast.front_brake_pressure);
-        // Serial.print(" R: "); Serial.print(sensor_vals.fast.rear_brake_pressure);
-        // Serial.print(" } SL: { D: "); Serial.print(sensor_vals.slow.fake_value);
-        // Serial.print(" } Ct: "); Serial.print(sensor_vals.control);
-        // Serial.print(" , #"); Serial.println(sensor_vals.fast.packetnum);
+        Serial.print("WS { FL: "); Serial.print(sensor_vals.fast.fl_wheel_speed);
+        Serial.print(" FR: "); Serial.print(sensor_vals.fast.fr_wheel_speed);
+        Serial.print(" BL: "); Serial.print(sensor_vals.fast.bl_wheel_speed);
+        Serial.print(" BR: "); Serial.print(sensor_vals.fast.br_wheel_speed);
+        Serial.print(" BT { FL: "); Serial.print(sensor_vals.fast.fl_brake_temperature);
+        Serial.print(" FR: "); Serial.print(sensor_vals.fast.fr_brake_temperature);
+        Serial.print(" BL: "); Serial.print(sensor_vals.fast.bl_brake_temperature);
+        Serial.print(" BR: "); Serial.print(sensor_vals.fast.br_brake_temperature);
+        Serial.print(" } BP: { F: "); Serial.print(sensor_vals.fast.front_brake_pressure);
+        Serial.print(" R: "); Serial.print(sensor_vals.fast.rear_brake_pressure);
+        Serial.print(" } SL: { D: "); Serial.print(sensor_vals.slow.fake_value);
+        Serial.print(" } Ct: "); Serial.print(sensor_vals.control);
+        Serial.print(" , #"); Serial.println(sensor_vals.fast.packetnum);
       } else {
         Serial.println("Receive failed");
       }
