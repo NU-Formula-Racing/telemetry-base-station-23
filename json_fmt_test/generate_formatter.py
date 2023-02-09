@@ -51,4 +51,4 @@ target = open(target_path)
 print("Parsing struct formats...")
 
 # Hold member names, datatypes
-fast_members
+# fast_members
