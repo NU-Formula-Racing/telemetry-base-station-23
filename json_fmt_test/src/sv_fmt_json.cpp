@@ -1,13 +1,18 @@
 #include "sv_fmt_json.h"
 
 void sv_fmt_json(message_code_t* mc, sensor_vals_t* sv) {
-  Serial.print("{\"fast\":{\"jigglypuff\":"); Serial.print(sv->fast.jigglypuff);
-  Serial.print(",\"sheik\":"); Serial.print(sv->fast.sheik);
-  Serial.print(",\"greninja\":"); Serial.print(sv->fast.greninja);
-  Serial.print("},{\"med\":{\"sunset\":"); Serial.print(sv->med.sunset);
-  Serial.print(",\"twilight\":"); Serial.print(sv->med.twilight);
-  Serial.print("},{\"slow\":{\"fake_value\":"); Serial.print(sv->slow.fake_value);
-  Serial.print("},\"exodia\":"); Serial.print(sv->exodia);
-  Serial.print(",\"ragnar\":"); Serial.print(sv->ragnar);
+  Serial.print("{\"fast\":{\"fl_wheel_speed\":"); Serial.print(sv->fast.fl_wheel_speed);
+  Serial.print(",\"fl_brake_temperature\":"); Serial.print(sv->fast.fl_brake_temperature);
+  Serial.print(",\"fr_wheel_speed\":"); Serial.print(sv->fast.fr_wheel_speed);
+  Serial.print(",\"fr_brake_temperature\":"); Serial.print(sv->fast.fr_brake_temperature);
+  Serial.print(",\"bl_wheel_speed\":"); Serial.print(sv->fast.bl_wheel_speed);
+  Serial.print(",\"bl_brake_temperature\":"); Serial.print(sv->fast.bl_brake_temperature);
+  Serial.print(",\"br_wheel_speed\":"); Serial.print(sv->fast.br_wheel_speed);
+  Serial.print(",\"br_brake_temperature\":"); Serial.print(sv->fast.br_brake_temperature);
+  Serial.print(",\"front_brake_pressure\":"); Serial.print(sv->fast.front_brake_pressure);
+  Serial.print(",\"rear_brake_pressure\":"); Serial.print(sv->fast.rear_brake_pressure);
+  Serial.print(",\"packetnum\":"); Serial.print(sv->fast.packetnum);
+  Serial.print("},\"slow\":{\"fake_value\":"); Serial.print(sv->slow.fake_value);
+  Serial.print("},\"control\":"); Serial.print(sv->control);
   Serial.println("}");
 }

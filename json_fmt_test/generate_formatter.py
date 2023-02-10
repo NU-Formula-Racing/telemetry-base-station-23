@@ -6,8 +6,8 @@
 # Copyright (c) 2023
 
 # This is not a pure Python file, but a build script used by PIO.
-# Any errors that the Python environment raises can be reasonably ignored unless
-# they affect script execution.
+# Any errors that the Python environment raises can be reasonably ignored 
+# if otherwise allowed by PIO documentation.
 
 # This script must be run "pre" compilation, since the formatting function should
 # be completed/updated if it is to be used in the main program.
@@ -21,40 +21,53 @@ from os import getcwd # Get directory bearings
 from pathlib import Path # Manipulate to find struct header file
 
 # Import current environment
-env = DefaultEnvironment()
+# env = DefaultEnvironment()
 
 ### Classes ###
 # Abstraction and automation behind parsing struct member names,
 # in particular handling formatting automation
 class MemberNames:
   def __init__(self, parent: str):
-    # Storage list for names
+    # Storage list for names, monotonically increases
     self.names = []
     
-    # Iteration index
+    # Iteration index for names array
     self.iter = 0
     
     # Parent name of member, if any
     # Setting it blank prevents it from appearing
     self.parent = parent
     
-  # Add new name
+  # Add new name to iterator
   def append(self, name):
     self.names.append(name)
     
+  # Get total number of names contained in iterator
   def len(self):
     return len(self.names)
     
+  # Used to make this an Iterator
   def __iter__(self):
     return self
-    
+   
+  # Get next element
+  # Increments iter index to advance 
   def __next__(self):
     if (self.iter >= len(self.names)):
-      raise StopIteration
+      raise StopIteration # Standard for reaching end of Iterator
+    
+    # All lines start with a tab and the function name
     fmt_line = "  Serial.print(\""
+    
+    # Additional logic for start of iterator, primarily concerning self.parent
     if self.iter == 0:
-      fmt_line += ("}," if self.parent is not "fast" else "") + (("{\\\"" + self.parent + "\\\":{") if self.parent is not "" else "")
-    fmt_line += f"{',' if self.iter > 0 else ''}\\\"{self.names[self.iter]}\\\":\"); Serial.print(sv->{self.parent}{'' if self.parent is '' else '.'}{self.names[self.iter]});\n"
+      # Assumes "fast" is the first of the parents used, and non-parented variables come up last
+      fmt_line += ("}," if self.parent != "fast" else "") + ("{" if self.parent == "fast" else "") + (("\\\"" + self.parent + "\\\":{") if self.parent != "" else "")
+    
+    # General logic: name, then another Serial.print for the variable
+    fmt_line += f"{',' if self.iter > 0 else ''}\\\"{self.names[self.iter]}\\\":\"); Serial.print(sv->{self.parent}{'' if self.parent == '' else '.'}{self.names[self.iter]});\n"
+    
+    # Advance iterator and return formatted line
     self.iter += 1
     return fmt_line
 
@@ -105,22 +118,56 @@ cond_members = MemberNames("")
 # Once it reaches 4, it stops counting
 struct_def_count = 0
 
-# Controller to determine
-# An enum
+# Controller to determine whether or not
+# the parser is actively collecting member names
+# Set to True if a valid struct definition found
+# Set to False if searching or end reached
 active_parse = False
 
 # Identify names of members
 for line in header.readlines():
-  line_parse = []
-  # Identify value struct definition
+  # Logic for when search is actively parsing
+  if active_parse:
+    # End of struct definition
+    if line[0] == '}':
+      # Increment counter and reset control
+      struct_def_count += 1
+      active_parse = False
+    # FAST_SENSORS
+    elif struct_def_count == 0:
+      # Identify words in line
+      line_parse = line.split(" ")
+      if line_parse[2] != "//": # Ignore commented lines
+        fast_members.append(line_parse[3][:-2])
+    # MED_SENSORS
+    elif struct_def_count == 1:
+      # For now, these are unused, so just move on
+      struct_def_count += 1
+      active_parse = False
+      # line_parse = line.split(" ")
+      # med_members.append(line_parse[3][:-2])
+    # SLOW_SENSORS
+    elif struct_def_count == 2:
+      line_parse = line.split(" ")
+      if line_parse[2] != "//":
+        slow_members.append(line_parse[3][:-2])
+    # SENSOR_VALS conditional members
+    elif struct_def_count == 3:
+      line_parse = line.split(" ")
+      # Ensure parent members aren't counted
+      if line_parse[2] != "//" and line_parse[2].find("sensors_t") == -1:
+        cond_members.append(line_parse[3][:-2])
+  
+  # Otherwise, identify value struct definition
+  # Assumes structs are declared separate of typedef aliasing
+  # i.e. no `typedef_struct`
   if line[:6] == "struct":
     line_parse = line.split(" ")
-    # if line_parse
-    print(line)
+    # Ignore lines with references
+    if line_parse[1].find("REF") == -1:
+      active_parse = True
     
-  
-    
-  # If relevant data retrieved, break
+  # If relevant data retrieved, stop reading
   if (struct_def_count > 3 and not active_parse):
     break
 
@@ -128,11 +175,12 @@ for line in header.readlines():
 header.close()
 
 ### Write formatter function ###
-print("Writing to ", target_name, "...")
+print("Writing to", target_name, "...")
 
-# Since formatter must be changed, the file is reset
+# Since formatter must be changed, the file is overwritten
 if target_path.exists():
-  print("Resetting file...")
+  # Clear file and write a new one in its place
+  print("File reset.")
   subprocess.run(["rm", target_path])
   subprocess.run(["touch", target_path])
 if not target_path.exists():
@@ -146,34 +194,20 @@ target = open(target_path, "w")
 # These correspond to including the target's header file and the function definition
 target.write(f'#include "{target_name[:-4]}.h"\n\nvoid {target_name[:-4]}(message_code_t* mc, sensor_vals_t* sv)' + ' {\n')
 
-# Test integrity of MemberNames abstraction class
-# TODO: Make this relevant to actual sensor data
-fast_members.append("jigglypuff")
-fast_members.append("sheik")
-fast_members.append("greninja")
-
-med_members.append("sunset")
-med_members.append("twilight")
-
-slow_members.append("fake_value")
-
-cond_members.append("exodia")
-cond_members.append("ragnar")
-
 # Write formatter function
-# target.write("  Serial.print(\"{\\\"fast\\\":{\");\n")
+# Fast member names; also starts up JSON
 for l in fast_members:
   target.write(l)
-# if med_members.len() > 0:
-#   target.write("  Serial.print(\"},\\\"med\\\":{\");\n")
+# Med member names
 for l in med_members:
   target.write(l)
-# target.write("  Serial.print(\"},\\\"slow\\\":{\");\n")
+# Slow member names
 for l in slow_members:
   target.write(l)
-# target.write("  Serial.print(\"},\");\n")
+# Conditional member names
 for l in cond_members:
   target.write(l)
+# End JSON and start newline
 target.write("  Serial.println(\"}\");\n")
 
 # Close target file

@@ -42,7 +42,7 @@ void loop() {
 
   // Increment counter and control loopback
   ++counter;
-  delay(10);
+  delay(100);
 
   // Simulate updates: modify data
   test_sensors.fast.fl_wheel_speed = random(max(1.0, test_sensors.fast.fl_wheel_speed - 1.0) * 1000,

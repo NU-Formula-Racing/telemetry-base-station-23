@@ -1,2 +1,70 @@
 This project is meant to test a method of developing fast JSON formatting on the transceiver
 by exploiting the static nature of C structs to directly map object data into a formatter.
+
+Because of the need to incorporate/eliminate additional sensors and controls over time, this project
+is meant to develop a *fast* serialization routine during runtime that minimizes calls to Serial
+while *reacting* to changes in the outline for the struct members.
+
+The crux of the method is the program used to generate the code for the formatting function which is
+run before compilation. This utilizes PlatformIO's support of build scripts to run tasks before and after
+compilation; in this case, the build script is used to write the formatter before compiling it.
+
+### Language
+
+Python was used as the language for the formatter generator for a variety of factors:
+
+- PIO's build system runs in Python, so Python naturally integrates into its build cycle and allows
+  for the generator to be written directly as a PIO build script. It also doesn't require additional
+  language and/or native platform support.
+
+- Python's dynamic, modular nature and robust string (`str`) manipulation methods allow for easy
+  and flexible parsing without the complications of manual memory management for strings and string
+  arrays. The author is also well acquainted with Python's string manipulation techniques.
+
+- Focus on maximizing efficiency during runtime. While writing the formatter in Python may potentially
+  sacrifice efficiency due to extraneous data checks and uncontrolled amortized reallocation, these
+  are only of tangential concern since the script is assumed to be run significantly less frequently
+  than the formatter itself, which may be called hundreds of times per minute. It also saves on
+  developer time.
+
+### Setup
+
+A few prerequisites are required to set up this method of precompilation generation:
+
+- The generator is written in `generate_formatter.py`. To run it as a PIO build script, include the
+  following line at the end of your target environment block in `platformio.ini`: 
+
+  `extra_scripts = pre:generate_formatter.py`
+
+  The `pre` keyword tells PIO to run it *before* compilation, which will allow the formatter to be written
+  before the rest of the program compiles. The script must be written in and suffixed as Python.
+
+- The header to read from is assumed to be named `sensor_vals.h`, which contains information about the
+  layout of the corresponding struct `SENSOR_VALS` (aliased `sensor_vals_t`), its internal structs
+  `FAST_SENSORS`, `MED_SENSORS`, and `SLOW_SENSORS`, and an alias for a primitive enum `message_code_t`.
+  These are assumed to be derivative of the definitions in the equivalent header file in project `bs_struct/`.
+
+- The header and source file are assumed to be named `sv_fmt_json` (`.h` and `.c`), which will contain
+  the formatting function titled the same as their filenames:
+
+  `void sv_fmt_json(message_code_t* mc, sensor_vals_t* sv)`
+
+  The typenames in the arguments are based off `sensor_vals.h`.
+
+- The headers are assumed to be located in the `include/` directory of a PIO project.
+
+- The target file (in which the formatter will be written in) will be generated, and thus is not required
+  for initial setup. Here, that file is `sv_fmt_json.cpp` and will be located in `src/`.
+
+### Project
+
+This project encapsulates the initial development and test of this method of JSON formatting on
+an embedded device (Teensy). It is assumed to run on a device that can be powered with USB, and requires
+no additional components (e.g. LoRa connections or CAN bus).
+
+In `main.cpp`, the test can be entirely run on the device and consists of a simple loop program in which
+data contained within a complete `sensor_vals_t` object is altered over time, formatted into JSON,
+and sent. The most efficient method of JSON formatting, given that JSON objects are not being directly read from
+and that the entire composition of the object is statically known, is to write the object to Serial while it is
+being formatted. This requires no library for JSON objects, as it is assumed that a project up the pipeline will
+handle that.
