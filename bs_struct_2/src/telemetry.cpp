@@ -14,7 +14,6 @@
 
 #include "target.h"
 #include "sensor_vals.h"
-#include "ser_des.h"
 
 #ifdef TELEMETRY_BASE_STATION_TX
   // CAN library for Teensy
@@ -64,13 +63,6 @@ bool rfm95_init_successful = true;
   CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure_sig;
 
   CANRXMessage<2> brake_pressure_msg{can_bus, 0x410, front_brake_pressure_sig, rear_brake_pressure_sig};
-
-  // Additional 3 bytes appended at end: 2 bytes for packetnum, 1 byte for null-terminator
-  // Total packet size: 23 bytes < capacity
-
-  /* Packet */
-  // Common across send and receive functions
-  char packet[PACKET_SIZE];
 #endif
 
 /* Data objects */
@@ -108,31 +100,6 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 // Packet number for ordering/debugging
 // From header file
 uint16_t packetnum = 0;
-
-// Raw signal data
-uint16_t fl_wheel_speed;
-uint16_t fl_brake_temperature;
-uint16_t fr_wheel_speed;
-uint16_t fr_brake_temperature;
-uint16_t bl_wheel_speed;
-uint16_t bl_brake_temperature;
-uint16_t br_wheel_speed;
-uint16_t br_brake_temperature;
-
-uint16_t front_brake_pressure;
-uint16_t rear_brake_pressure;
-
-#ifdef TELEMETRY_BASE_STATION_RX
-  // The "true" values, or formatted values for floating-point sensors
-  float fl_wheel_speed_true;
-  float fl_brake_temperature_true;
-  float fr_wheel_speed_true;
-  float fr_brake_temperature_true;
-  float bl_wheel_speed_true;
-  float bl_brake_temperature_true;
-  float br_wheel_speed_true;
-  float br_brake_temperature_true;
-#endif
 
 #ifdef TELEMETRY_BASE_STATION_TX
   /* Flags */
