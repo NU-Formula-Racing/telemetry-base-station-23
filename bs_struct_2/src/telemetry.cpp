@@ -82,9 +82,6 @@ bool rfm95_init_successful = true;
   // Control value
   uint8_t control;
 
-  // Test value
-  float temp = 90.0;
-
   // Sensor value reference struct
   sensor_refs_t sensor_refs;
 #endif
@@ -194,7 +191,7 @@ bool telemetry_setup() {
     // Get and store sensor references
     sensor_refs = {
       .fast = {
-        .fl_wheel_speed = &temp, // &(fl_wheel_speed_sig.value_ref()),
+        .fl_wheel_speed = &(fl_wheel_speed_sig.value_ref()),
         .fl_brake_temperature = &(fl_brake_temperature_sig.value_ref()),
         .fr_wheel_speed = &(fr_wheel_speed_sig.value_ref()),
         .fr_brake_temperature = &(fr_brake_temperature_sig.value_ref()),
@@ -256,20 +253,6 @@ void tx_send() {
       
       // // Serialize the data
       serialize(&data_id, &sensor_refs, buf, &buf_len);
-
-      // Test; replacing variable fl_wheel_speed with constant fl_brake_temperature = 90
-      // Results: Consistantly displays FE 39 EC 43, regardless of how the pointer is accessed
-      // This method below directly copies the value, previously this was referenced
-      // Data bytes represent LE: 472.45, BE: -6.178e+37
-      // Correct byteseq for displaying 90.0 should be 0 0 B4 42
-      // float temp = fl_brake_temperature_sig.value_ref(); // 90.0;
-      // uint8_t *buf_ptr = &buf[2], *tmp_ptr = (uint8_t*) &temp; 
-      // *(buf_ptr++) = *(tmp_ptr++);
-      // *(buf_ptr++) = *(tmp_ptr++);
-      // *(buf_ptr++) = *(tmp_ptr++);
-      // *(buf_ptr++) = *(tmp_ptr++);
-
-      // Update: test now uses global variable reference `temp` with the same results
 
       // Send data and verify completion
       delay(10);
