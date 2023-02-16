@@ -22,11 +22,6 @@
 
 /********** DEFINES **********/
 
-/* Packet size */
-// Size of data packet to be sent over LoRa
-// Math is conducted below:
-#define PACKET_SIZE 23
-
 /********** VARIABLES **********/
 
 /* RadioHead */

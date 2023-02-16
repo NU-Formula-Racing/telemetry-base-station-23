@@ -27,9 +27,26 @@ Python was used as the language for the formatter generator for a variety of fac
   than the formatter itself, which may be called hundreds of times per minute. It also saves on
   developer time.
 
+
 ### Setup
 
-A few prerequisites are required to set up this method of precompilation generation:
+In summary, setting up the generator for an NFR Telemetry Base Station project is as simple as:
+
+1) Making sure your header of interest is located in the `include/` directory
+
+2) Copying `sv_fmt_json.h` in the `include/` directory
+
+3) Copying `generate_formatter.py` into the main directory (not in a subfolder)
+
+4) Adding a "pre" `extra_scripts` line to `platformio.ini`
+
+5) Making sure that your header name is included in `sv_fmt_json.h`
+
+In-depth information about the specifics of these files are included in the section below.
+
+### Details
+
+A few prerequisites are required to understand this method of precompilation generation:
 
 - The generator is written in `generate_formatter.py`. To run it as a PIO build script, include the
   following line at the end of your target environment block in `platformio.ini`: 

@@ -1,0 +1,30 @@
+This project encompasses a series of tests to study and optimize the physical timing constraints for LoRa and the comms program.
+In particular, it exists to maximise the rate of reception, minimise the rate of transmission, and synchronise multiple-timers.
+Their description and results are described below:
+
+1) Packet size test: determine how packet size of transmission affects the rate
+-  The program has been reduced to a simple comm program akin to a template for testing a communication channel.
+   The TX still ticks a CAN bus, but only transmits a packet number (`packetnum`) + initial data in its `packet`.
+   The send buffer size is arbitrarily specified within the program and is the controlled variable for testing.
+   The first delay prior to sending data is commented out for potential maximisation of speed.
+   The RX simply receives the buffer, prints out its size, and prints the `packetnum`.
+
+-  The receiver runs at 1 ms (ideally), and the transceiver runs at 1 s.
+
+-  The buffer size is varied, and the output on the TX is monitored over time with both the output data and time elapsed recorded.
+   Once sufficient time has passed, transmission stops and both the elapsed time and `packetnum` of final message are recorded.
+   From there, the rate of transmission, or the number of messages per second, is recorded.
+
+-  This test assumes that transmission time is ignored if a receiver does not obtain its message. It also assumes that the 10 ms
+   delay in the TX does not dominate transmission time.
+
+-  Results of this test are written below:
+
+| Packet size | Time elapsed (s) | Max packetnum | Rate (#/s) |
+|-------------|------------------|---------------|------------|
+| 256         |  |  |  |
+| 128         |  |  |  |
+| 64          |  |  |  |
+| 32          |  |  |  |
+| 16          |  |  |  |
+| 8           |  |  |  |
