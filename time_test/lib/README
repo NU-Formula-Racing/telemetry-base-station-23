@@ -7,7 +7,8 @@ Their description and results are described below:
    The TX still ticks a CAN bus, but only transmits a packet number (`packetnum`) + initial data in its `packet`.
    The send buffer size is arbitrarily specified within the program and is the controlled variable for testing.
    The first delay prior to sending data is commented out for potential maximisation of speed.
-   The RX simply receives the buffer, prints out its size, and prints the `packetnum`.
+   
+-  The RX simply receives the buffer, prints out its size, reads the `packetnum`, and prints it.
 
 -  The receiver runs at 1 ms (ideally), and the transceiver runs at 1 s.
 
@@ -22,9 +23,10 @@ Their description and results are described below:
 
 | Packet size | Time elapsed (s) | Max packetnum | Rate (#/s) |
 |-------------|------------------|---------------|------------|
-| 256         |  |  |  |
-| 128         |  |  |  |
-| 64          |  |  |  |
-| 32          |  |  |  |
-| 16          |  |  |  |
-| 8           |  |  |  |
+| 251 (max)   | 89.94            | 224           | 2.491      |
+| 128         | 90.01            | 406           | 4.511      |
+| 64          | 143.97           | 1162          | 8.071      |
+| 32          | 193.80           | 2517          | 12.988     |
+| 16          | 205.13           | 3592          | 17.511     |
+| 8           | 217.58           | 5239          | 23.968     |
+| 4 (test min)| 210.83           | 5759          | 27.316     |

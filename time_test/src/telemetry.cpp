@@ -220,8 +220,8 @@ void tx_task() {
       
       // Send data and verify completion
       // delay(10);
-      rf95.send(packet, RH_RF95_MAX_MESSAGE_LEN);
-      delay(10);
+      rf95.send(packet, 8);
+      // delay(10);
       rf95.waitPacketSent();
     #endif
   }
@@ -249,6 +249,7 @@ void rx_task() {
       *(visitor++) = packet[1];
       *(visitor++) = packet[2];
       *(visitor++) = packet[3];
+      Serial.println(packetnum);
 
       // Serial.println((char*) packet);
 
