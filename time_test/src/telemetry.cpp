@@ -220,7 +220,7 @@ void tx_task() {
       
       // Send data and verify completion
       // delay(10);
-      rf95.send(packet, 8);
+      rf95.send(packet, 4);
       // delay(10);
       rf95.waitPacketSent();
     #endif
@@ -241,9 +241,9 @@ void rx_task() {
     if (rf95.recv(packet, &len)) {
       // Receive successful
       // RH_RF95::printBuffer("Received ", packet, len);
-      Serial.println(len);
+      // Serial.println(len);
 
-      Serial.print("Got: ");
+      // Serial.print("Got: ");
       visitor = (uint8_t*) &packetnum;
       *(visitor++) = packet[0];
       *(visitor++) = packet[1];

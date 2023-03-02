@@ -6,7 +6,7 @@ Their description and results are described below:
 -  The program has been reduced to a simple comm program akin to a template for testing a communication channel.
    The TX still ticks a CAN bus, but only transmits a packet number (`packetnum`) + initial data in its `packet`.
    The send buffer size is arbitrarily specified within the program and is the controlled variable for testing.
-   The first delay prior to sending data is commented out for potential maximisation of speed.
+   All delays prior to sending data are commented out for potential maximisation of speed.
    
 -  The RX simply receives the buffer, prints out its size, reads the `packetnum`, and prints it.
 
@@ -16,8 +16,7 @@ Their description and results are described below:
    Once sufficient time has passed, transmission stops and both the elapsed time and `packetnum` of final message are recorded.
    From there, the rate of transmission, or the number of messages per second, is recorded.
 
--  This test assumes that transmission time is ignored if a receiver does not obtain its message. It also assumes that the 10 ms
-   delay in the TX does not dominate transmission time.
+-  This test assumes that transmission time is ignored if a receiver does not obtain its message.
 
 -  Results of this test are written below:
 
@@ -30,3 +29,20 @@ Their description and results are described below:
 | 16          | 205.13           | 3592          | 17.511     |
 | 8           | 217.58           | 5239          | 23.968     |
 | 4 (test min)| 210.83           | 5759          | 27.316     |
+
+-  Analysing the data via MATLAB motivates the relation between $P$ packet size and $R$ transmission rate to be
+
+   $$R \sim \frac{1}{a P + b}$$
+
+-  Performing the regression yields the coefficients $a = 0.0015$, $b = 0.0308$.
+
+-  As a testament to the accuracy of this fit, the correlation between $P$ and $\frac{1}{R}$ is 0.9999, indicating
+   that this model strongly resembles the relation between transmission packet size and reception.
+
+2) Receiver timer test: determine how quickly RX can obtain data without breaking
+-  The TX ticks a CAN bus, transmits a packet number (`packetnum`) + initial data in its `packet`.
+   The send buffer size is set to its lowest possible value (4), with no delays between loops.
+   
+-  The RX receives the buffer, reads the `packetnum`, and prints it.
+
+-  The receiver runs at 1 ms (ideally), and the transceiver runs at arbitrarily specified times.
