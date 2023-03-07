@@ -43,6 +43,73 @@ Their description and results are described below:
 -  The TX ticks a CAN bus, transmits a packet number (`packetnum`) + initial data in its `packet`.
    The send buffer size is set to its lowest possible value (4), with no delays between loops.
    
--  The RX receives the buffer, reads the `packetnum`, and prints it.
+-  The RX receives the buffer, reads the `packetnum`, prints it, and increments a `counter` for the number of
+   received messages.
 
--  The receiver runs at 1 ms (ideally), and the transceiver runs at arbitrarily specified times.
+-  The receiver runs at 1 ms (ideally), and the transceiver runs at arbitrarily specified times. These times
+   are specified in the RX macro block of `main.cpp`'s `setup`.
+   
+-  RX times start at 1 s (1000 ms) and descends until functionality stops or strange behavior occurs.
+
+-  For each test, the TX is run for a minute, and the RX's output is observed. After 1 minute elapses
+   from the start of Serial output, the TX is turned off and the last transmitted `packetnum` is recorded.
+
+-  The RX, when no messages are available and some transmissions have occurred, will print the `counter`
+   instead. If possible, this only occurs once, after which the RX terminates in an unbreaking loop.
+   However, as the RX rate approaches the TX rate (from Test 1), this self-termination may be infeasible.
+
+-  The final `packetnum` and `counter` values as well as any changes in behavior are recorded below: 
+
+| RX time (ms) | Final packetnum | RX count | Comments                                             |
+|--------------|-----------------|----------|------------------------------------------------------|
+| 1000         | 1658            | 62       | Smooth reception                                     |
+| 500          | 1668            | 123      |                                                      |
+| 250          | 1648            | 242      |                                                      |
+| 100          | 1653            | 601      | Msg sometimes does not reach LoRa before reading     |
+| 50           | 1657            | 762      | Frequently lacks msg up to 1/3rd the time            |
+| 25           | 1654            | 888      | At least half (majority) of loops do not receive     |
+| 20           | 1659            | 870      |                                                      |
+| 15           | (unretrievable) | 946      |                                                      | 
+| 10           | N/A             | 1057     | Ctr increases about as fast as RX rate (>20 #/s)     |
+| 5            | N/A             | 1164     |                                                      |
+| 1            | N/A             | 1650     | Nearly all loops lack a msg                          |
+
+-  The number of transmissions should ideally be equal to
+
+   (rate for 4 byte TX) * (1 min) = 27.316 (#/s) * 60 (s) = 1639.0
+
+-  Looking at the number of RXs, loops start to become wasteful below 100 ms, with no data being read
+   during that time increment. The number of RXs begins to saturate within 100-20 ms as it approaches
+   the TX rate. Below 20 ms, the counter climbs again, though not at an inversely proportional rate.
+
+-  At 1 ms, however, the rate closely matches the ideal TX rate, with the compromise being that
+   most of the loops simply do not read data, but they can readily loop back and capture new data.
+
+-  For efficiency, and with the anticipation that the final BS will be more time-expensive than 1 ms
+   allows, a favorable RX rate should lie somewhere between 50-20 ms, with at least half of the loops
+   being used to actually read new messages.
+
+-  This test also disproves the previous paradigm that the RX rate must be well below the TX rate, as
+   the RX still functions even when its reception rate is much greater than the transmission rate.
+
+3) TX-RX rate match procedure to maximize efficiency for loops
+-  This method attempts to identify a RX rate that most closely follows a measured TX rate that
+   minimizes lost TX packets simultaneously with idling RX loops. Due to slight processor irregularities
+   on both ends and the timer quantization limit of ms, this rate should ideally be slightly faster
+   than the TX rate.
+
+-  Let $r_t$ = TX rate in Hz. The TX consists of the same functionality as in Test 2 but with a 
+   constant transmission packet size of 32. This rate empirically has the value of $r_t = 12.988$.
+
+-  Let $T_t$ = TX period in ms, which is the actual timing period and is longer than the one input in `main.c`.
+   The period and the rate share the following relation:
+
+   $$T_t = \frac{1000}{r_t} = 76.994$$
+
+-  Round down $T_t$ to the nearest millisecond. This becomes $T_r = 76$, the ideal RX period.
+
+-  Identify the delay in the RX system upon successful reception. The RX is first set up with two counters:
+   - A `counter` for successful receptions of an RX packet
+   - A `loop` count for total number of loops
+   During a loop, the RX will check for an available packet. If it exists, read the buffer and increment the counter.
+   This process has a delay, which is also artificially inflated by 5 ms to simulate the true processor.

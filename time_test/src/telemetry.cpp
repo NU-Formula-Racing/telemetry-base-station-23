@@ -94,6 +94,12 @@ uint16_t rear_brake_pressure;
   float bl_brake_temperature_true;
   float br_wheel_speed_true;
   float br_brake_temperature_true;
+
+  // Number of successful receptions
+  uint32_t counter = 0;
+
+  // Total number of loops
+  uint32_t total = 0;
 #endif
 
 /********** PUBLIC FUNCTION DEFINITIONS **********/
@@ -220,7 +226,7 @@ void tx_task() {
       
       // Send data and verify completion
       // delay(10);
-      rf95.send(packet, 4);
+      rf95.send(packet, 32);
       // delay(10);
       rf95.waitPacketSent();
     #endif
@@ -232,6 +238,7 @@ void tx_task() {
  * 
  */
 void rx_task() {
+  #ifdef TELEMETRY_BASE_STATION_RX
   if (rf95.available() && (rfm95_init_successful == true)) {
 
     // Should be a message for us now   
@@ -249,7 +256,10 @@ void rx_task() {
       *(visitor++) = packet[1];
       *(visitor++) = packet[2];
       *(visitor++) = packet[3];
-      Serial.println(packetnum);
+      Serial.print(counter); Serial.print("\t");
+      Serial.print(packetnum); Serial.print("\t");
+      Serial.println(total);
+      ++counter;
 
       // Serial.println((char*) packet);
 
@@ -293,5 +303,11 @@ void rx_task() {
     } else {
       Serial.println("Receive failed");
     }
+  } else if (counter > 0) {
+    Serial.print("Nil\t"); 
+    Serial.print(packetnum - counter); Serial.print("\t");
+    Serial.println(total);
   }
+  ++total;
+  #endif
 }

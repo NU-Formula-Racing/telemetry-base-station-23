@@ -26,7 +26,7 @@ void setup() {
 
   #ifdef TELEMETRY_BASE_STATION_RX
     Serial.println("CAN-LoRa test: RX");
-    timer_group.AddTimer(1000U, rx_task);
+    timer_group.AddTimer(38U, rx_task);
   #endif
 }
 
