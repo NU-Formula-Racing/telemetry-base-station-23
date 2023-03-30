@@ -20,9 +20,6 @@ import subprocess
 from os import getcwd # Get directory bearings
 from pathlib import Path # Manipulate to find struct header file
 
-# Import current environment
-# env = DefaultEnvironment()
-
 ### Classes ###
 # Abstraction and automation behind parsing struct member names,
 # in particular handling formatting automation

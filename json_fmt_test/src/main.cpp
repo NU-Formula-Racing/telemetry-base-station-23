@@ -1,5 +1,3 @@
-#include "sv_fmt_json.h"
-
 /********** INCLUDES **********/
 #include <Arduino.h>
 #include "sv_fmt_json.h"

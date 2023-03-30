@@ -113,3 +113,10 @@ Their description and results are described below:
    - A `loop` count for total number of loops
    During a loop, the RX will check for an available packet. If it exists, read the buffer and increment the counter.
    This process has a delay, which is also artificially inflated by 5 ms to simulate the true processor.
+
+4) Aside: amount of time the LoRa is in transmission (data rate)
+-  
+
+-  For freq 915 MHz, bandwidth 125 kHz, power 23 dBm, code Rate 4 / 5, spreading factor 7 (128), 4 preamble symbols
+
+-  172.288 ms for 32 bytes
