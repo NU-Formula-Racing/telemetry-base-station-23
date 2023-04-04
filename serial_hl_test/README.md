@@ -1,0 +1,1 @@
+Simple Python test of reading JSON output from an Arduino Serial port, which will help with complete integration.

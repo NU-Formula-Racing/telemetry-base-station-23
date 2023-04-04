@@ -242,8 +242,8 @@ void rx_task() {
       // Check if a message has been received, and retrieve its data and length
       if (rf95.recv(buf, &buf_len)) {
         // Receive successful
-        RH_RF95::printBuffer("Received ", buf, buf_len);
-        Serial.print("Got: "); Serial.println((char*) buf);
+        // RH_RF95::printBuffer("Received ", buf, buf_len);
+        // Serial.print("Got: "); Serial.println((char*) buf);
 
         // Parse data
         deserialize(&data_id, &sensor_vals, buf);
