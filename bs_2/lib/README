@@ -107,4 +107,61 @@ CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloa
 CANTXMessage<3> motion_gyroscope_msg{bus_lo, 0x432, 6, T_DS, gyro_x_sig, gyro_y_sig, gyro_z_sig};
 CANRXMessage<3> motion_gyroscope_msg{bus_lo, 0x432, gyro_x_sig, gyro_y_sig, gyro_z_sig};
 
+// RTC
+CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rtc_sig;
+
+CANTXMessage<2> rtc_msg{bus_lo, 0x430, 8, T_DS, rtc_sig};
+CANRXMessage<2> rtc_msg{bus_lo, 0x430, rtc_sig};
+
 /* Inverter Driver */
+
+/* Structs */
+typedef struct 
+
+/* JSON Object */
+{
+  "fast" = {
+    "fl_wheel_speed" = 0.0,
+    "fr_wheel_speed" = 0.0,
+    "bl_wheel_speed" = 0.0,
+    "br_wheel_speed" = 0.0,
+    "front_brake_pressure" = 0,
+    "back_brake_pressure" = 0,
+    "hv_battery_voltage" = 0.0,
+    "hv_battery_temperature" = -40,
+    "hv_battery_current" = 0.0,
+    "hv_max_discharge_current" = 0.0,
+    "hv_max_recharge_current" = 0.0,
+    "accel_percentage" = 0,
+    "brake_percentage" = 0,
+    "tractile_system_status" = "off",
+    "motor_temperature" = -40.0,
+    "rpm" = 0.0,
+    "gps" = {
+      "latitude" = 0, 
+      "longitude" = 0
+    },
+    "accelerometer" = {
+      "x" = 0.0, 
+      "y" = 0.0, 
+      "z" = 0.0
+    },
+    "gyroscope" = {
+      "x" = 0.0, 
+      "y" = 0.0, 
+      "z" = 0.0
+    },
+    "rtc" = 1327,
+  },
+  "slow" = {
+    "fl_brake_temperature" = -40.0,
+    "fr_brake_temperature" = -40.0,
+    "bl_brake_temperature" = -40.0,
+    "br_brake_temperature" = -40.0,
+    "hv_state_of_charge" = 0,
+    "coolant_temperature" = -40.0,
+    "coolant_flow" = 0.0,
+    "ambient_temperature" = -40.0,
+    "inverter_temperature" = -40.0
+  }
+}
