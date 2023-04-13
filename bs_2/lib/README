@@ -1,46 +1,110 @@
+#define T_SEC std::chrono::milliseconds{1000}
+#define T_DS  std::chrono::milliseconds{100}
+#define T_CS  std::chrono::milliseconds{10}
+#define T_MS  std::chrono::milliseconds{1}
 
-This directory is intended for project specific (private) libraries.
-PlatformIO will compile them to static libraries and link into executable file.
+/* CAN Busses */
+TeensyCAN<CAN_BUS_HI> bus_hi{};
+TeensyCAN<CAN_BUS_LO> bus_lo{};
 
-The source code of each library should be placed in a an own separate directory
-("lib/your_library_name/[here are source files]").
+/* Sensor Variables (info) */
+// HI to LO
+// Increasing address locations
+// Signals before messages
+// Increasing start bit
 
-For example, see a structure of the following two libraries `Foo` and `Bar`:
+/* HI Bus Level Sensors */
+// High Voltage BMS (values and signalling)
+CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_discharge_sig;
+CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_sig;
+CANSignal<float, 24, 8, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
+CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
+CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
 
-|--lib
-|  |
-|  |--Bar
-|  |  |--docs
-|  |  |--examples
-|  |  |--src
-|  |     |- Bar.c
-|  |     |- Bar.h
-|  |  |- library.json (optional, custom build options, etc) https://docs.platformio.org/page/librarymanager/config.html
-|  |
-|  |--Foo
-|  |  |- Foo.c
-|  |  |- Foo.h
-|  |
-|  |- README --> THIS FILE
-|
-|- platformio.ini
-|--src
-   |- main.c
+CANTXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, 8, T_DS, hv_max_discharge_sig, hv_max_regen_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_temperature_sig};
+CANRXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, hv_max_discharge_sig, hv_max_regen_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_temperature_sig};
 
-and a contents of `src/main.c`:
-```
-#include <Foo.h>
-#include <Bar.h>
+CANSignal<uint8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> hv_state_of_charge_sig;
 
-int main (void)
-{
-  ...
-}
+CANTXMessage<1> hv_bms_status_msg{bus_hi, 0x241, 8, T_DS, hv_state_of_charge_sig};
+CANRXMessage<1> hv_bms_status_msg{bus_hi, 0x241, hv_state_of_charge_sig};
 
-```
+// Throttle
+CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> accel_percentage_sig;
+CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> brake_percentage_sig;
 
-PlatformIO Library Dependency Finder will find automatically dependent
-libraries scanning project source files.
+CANTXMessage<2> throttle_values_msg{bus_hi, 0x300, 2, T_DS, accel_percentage_sig, brake_percentage_sig};
+CANRXMessage<2> throttle_values_msg{bus_hi, 0x300, accel_percentage_sig, brake_percentage_sig};
 
-More information about PlatformIO Library Dependency Finder
-- https://docs.platformio.org/page/librarymanager/ldf.html
+CANSignal<uint8_t /* enum */, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> tractile_system_status_sig;
+
+CANTXMessage<1> throttle_status_msg{bus_hi, 0x301, 8, T_DS, tractile_system_status_sig};
+CANRXMessage<1> throttle_status_msg{bus_hi, 0x301, tractile_system_status_sig};
+
+// Temperature board
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> coolant_temperature_sig;
+CANSignal<float, 32, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> ambient_temperature_sig;
+
+CANTXMessage<2> ptrain_temp_msg{bus_hi, 0x420, 6, T_DS, coolant_temperature_sig, ambient_temperature_sig};
+CANRXMessage<2> ptrain_temp_msg{bus_hi, 0x420, coolant_temperature_sig, ambient_temperature_sig};
+
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> coolant_flow_sig;
+
+CANTXMessage<1> coolant_msg{bus_hi, 0x421, 2, T_DS, coolant_flow_sig};
+CANRXMessage<1> coolant_msg{bus_hi, 0x421, coolant_flow_sig};
+
+/* LO Bus Level Sensors */
+// Wheels (speed and brake temps)
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed_sig;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fl_brake_temperature_sig;
+
+CANTXMessage<2> fl_wheel_msg{bus_lo, 0x400, 4, T_DS, fl_wheel_speed_sig, fl_brake_temperature_sig};
+CANRXMessage<2> fl_wheel_msg{bus_lo, 0x400, fl_wheel_speed_sig, fl_brake_temperature_sig};
+
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed_sig;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fr_brake_temperature_sig;
+
+CANTXMessage<2> fr_wheel_msg{bus_lo, 0x401, 4, T_DS, fr_wheel_speed_sig, fr_brake_temperature_sig};
+CANRXMessage<2> fr_wheel_msg{bus_lo, 0x401, fr_wheel_speed_sig, fr_brake_temperature_sig};
+
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed_sig;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> bl_brake_temperature_sig;
+
+CANTXMessage<2> bl_wheel_msg{bus_lo, 0x402, 4, T_DS, bl_wheel_speed_sig, bl_brake_temperature_sig};
+CANRXMessage<2> bl_wheel_msg{bus_lo, 0x402, bl_wheel_speed_sig, bl_brake_temperature_sig};
+
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> br_wheel_speed_sig;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> br_brake_temperature_sig;
+
+CANTXMessage<2> br_wheel_msg{bus_lo, 0x403, 4, T_DS, br_wheel_speed_sig, br_brake_temperature_sig};
+CANRXMessage<2> br_wheel_msg{bus_lo, 0x403, br_wheel_speed_sig, br_brake_temperature_sig};
+
+// Brake Pressures
+CANSignal<uint16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> front_brake_pressure_sig;
+CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure_sig;
+
+CANTXMessage<2> brake_pressure_msg{bus_lo, 0x410, 4, T_DS, front_brake_pressure_sig, rear_brake_pressure_sig};
+CANRXMessage<2> brake_pressure_msg{bus_lo, 0x410, front_brake_pressure_sig, rear_brake_pressure_sig};
+
+// Motion Board
+CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> latitude_sig;
+CANSignal<uint32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> longitude_sig;
+
+CANTXMessage<2> motion_gps_msg{bus_lo, 0x430, 8, T_DS, latitude_sig, longitude_sig};
+CANRXMessage<2> motion_gps_msg{bus_lo, 0x430, latitude_sig, longitude_sig};
+
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_x_sig;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_y_sig;
+CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_z_sig;
+
+CANTXMessage<3> motion_accelerometer_msg{bus_lo, 0x431, 6, T_DS, accel_x_sig, accel_y_sig, accel_z_sig};
+CANRXMessage<3> motion_accelerometer_msg{bus_lo, 0x431, accel_x_sig, accel_y_sig, accel_z_sig};
+
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_x_sig;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_y_sig;
+CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_z_sig;
+
+CANTXMessage<3> motion_gyroscope_msg{bus_lo, 0x432, 6, T_DS, gyro_x_sig, gyro_y_sig, gyro_z_sig};
+CANRXMessage<3> motion_gyroscope_msg{bus_lo, 0x432, gyro_x_sig, gyro_y_sig, gyro_z_sig};
+
+/* Inverter Driver */
