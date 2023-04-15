@@ -19,10 +19,10 @@ CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)
 CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_sig;
 CANSignal<float, 24, 8, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
 CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
-CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
+CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_current_sig;
 
-CANTXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, 8, T_DS, hv_max_discharge_sig, hv_max_regen_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_temperature_sig};
-CANRXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, hv_max_discharge_sig, hv_max_regen_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_temperature_sig};
+CANTXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, 8, T_DS, hv_max_discharge_sig, hv_max_regen_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_current_sig};
+CANRXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, hv_max_discharge_sig, hv_max_regen_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_current_sig};
 
 CANSignal<uint8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> hv_state_of_charge_sig;
 
@@ -121,17 +121,23 @@ typedef struct
 /* JSON Object */
 {
   "fast" = {
-    "fl_wheel_speed" = 0.0,
-    "fr_wheel_speed" = 0.0,
-    "bl_wheel_speed" = 0.0,
-    "br_wheel_speed" = 0.0,
-    "front_brake_pressure" = 0,
-    "back_brake_pressure" = 0,
-    "hv_battery_voltage" = 0.0,
-    "hv_battery_temperature" = -40,
-    "hv_battery_current" = 0.0,
-    "hv_max_discharge_current" = 0.0,
-    "hv_max_recharge_current" = 0.0,
+    "wheel_speed" = {
+      "fl" = 0.0,
+      "fr" = 0.0,
+      "bl" = 0.0,
+      "bt" = 0.0
+    },
+    "brake_pressure" = {
+      "front" = 0,
+      "back" = 0
+    },
+    "hv_bms" = {
+      "battery_voltage" = 0.0,
+      "battery_temperature" = -40,
+      "battery_current" = 0.0,
+      "max_discharge_current" = 0.0,
+      "max_recharge_current" = 0.0
+    },
     "accel_percentage" = 0,
     "brake_percentage" = 0,
     "tractile_system_status" = "off",
@@ -154,11 +160,15 @@ typedef struct
     "rtc" = 1327,
   },
   "slow" = {
-    "fl_brake_temperature" = -40.0,
-    "fr_brake_temperature" = -40.0,
-    "bl_brake_temperature" = -40.0,
-    "br_brake_temperature" = -40.0,
-    "hv_state_of_charge" = 0,
+    "brake_temperature" = {
+      "fl" = -40.0,
+      "fr" = -40.0,
+      "bl" = -40.0,
+      "bt" = -40.0
+    },
+    "hv_bms" = {
+      "state_of_charge" = 0
+    },
     "coolant_temperature" = -40.0,
     "coolant_flow" = 0.0,
     "ambient_temperature" = -40.0,
