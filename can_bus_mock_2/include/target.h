@@ -18,13 +18,10 @@
  * - HIGH: ESP32 connected to CAN HI
  * - LOW:  ESP32 connected to CAN LO
  * 
- * To differentiate these macros from other library macros (FlexCAN),
- * the prefix TELEMETRY_BASE_STATION_ is added.
- * 
- * Only uncomment ONE or undef stuff may happen!!!
+ * Only uncomment ONE or too many CAN signals may get sent!
  */
 
-#define CAN_BUS_HI
+// #define CAN_BUS_HI
 #define CAN_BUS_LO
 
 #endif

@@ -251,7 +251,9 @@ VirtualTimerGroup timer_group;
   // RTC
   CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rtc_sig;
 
-  CANTXMessage<2> rtc_msg{bus, 0x430, 8, T_DS, rtc_sig};
+  CANTXMessage<1> rtc_msg{bus, 0x430, 8, T_DS, timer_group, 
+    rtc_sig
+  };
 #endif
 
 /********** SIM VARS **********/
@@ -332,6 +334,7 @@ void update_slow() {
 #ifdef CAN_BUS_HI
   USLFL(coolant_temperature_sig, temp_fl, 0.2f, 89.0f, 91.0f);
   USLINT(hv_state_of_charge_sig, 2, 9);
+  C_SAW(ambient_temperature_sig, temp_fl, -1.0f, 76.0f, 80.0f);
   USLFL(coolant_flow_sig, temp_fl, 0.7f, 50.0f, 60.0f);
 #endif
 
@@ -340,7 +343,6 @@ void update_slow() {
   C_SAW(fr_brake_temperature_sig, temp_fl, 0.3f, 85.0f, 95.0f);
   C_SAW(bl_brake_temperature_sig, temp_fl, 0.3f, 85.0f, 95.0f);
   C_SAW(br_brake_temperature_sig, temp_fl, 0.3f, 85.0f, 95.0f);
-  C_SAW(ambient_temperature_sig, temp_fl, -1.0f, 76.0f, 80.0f);
 #endif
 }
 
@@ -351,6 +353,9 @@ void setup()
   Serial.begin(9600);
   // Serial.println("Started");
   bus.Initialize(ICAN::BaudRate::kBaud1M);
+
+  /* Set starting signal values */
+  sim_init();
 
   /* Add update timers */
   timer_group.AddTimer(T_CS, update_fast);
@@ -364,14 +369,37 @@ void loop()
   
   /* Test: print serial data */
   // 8 at a time
-  Serial.print("1: "); Serial.println(fl_wheel_speed_sig);
-  Serial.print("2: "); Serial.println(fl_brake_temperature_sig);
-  Serial.print("1: "); Serial.println(fr_wheel_speed_sig);
-  Serial.print("2: "); Serial.println(fr_brake_temperature_sig);
-  Serial.print("1: "); Serial.println(bl_wheel_speed_sig);
-  Serial.print("2: "); Serial.println(bl_brake_temperature_sig);
-  Serial.print("1: "); Serial.println(br_wheel_speed_sig);
-  Serial.print("2: "); Serial.println(br_brake_temperature_sig);
+  #ifdef CAN_BUS_HI
+    Serial.print(hv_battery_voltage_sig); Serial.print(",\t");
+    Serial.print(hv_battery_temperature_sig); Serial.print(",\t");
+    Serial.print(tractile_system_status_sig); Serial.print(",\t");
+    Serial.print(accel_percentage_sig); Serial.print(",\t");
+    Serial.print(brake_percentage_sig); Serial.print(",\t");
+    Serial.print(brake_percentage_sig); Serial.print(",\t");
+    Serial.print(hv_battery_current_sig); Serial.print(",\t");
+    Serial.print(hv_max_discharge_sig); Serial.print(",\t");
+    Serial.println(hv_max_regen_sig);
+
+    Serial.print(coolant_temperature_sig); Serial.print(",\t");
+    Serial.print(hv_state_of_charge_sig); Serial.print(",\t");
+    Serial.print(ambient_temperature_sig); Serial.print(",\t");
+    Serial.println(coolant_flow_sig);
+  #endif
+
+  #ifdef CAN_BUS_LO
+    Serial.print(fl_wheel_speed_sig); Serial.print(",\t");
+    Serial.print(fr_wheel_speed_sig); Serial.print(",\t");
+    Serial.print(bl_wheel_speed_sig); Serial.print(",\t");
+    Serial.print(br_wheel_speed_sig); Serial.print(",\t");
+    Serial.print(front_brake_pressure_sig); Serial.print(",\t");
+    Serial.println(rear_brake_pressure_sig);
+
+    Serial.print(fl_brake_temperature_sig); Serial.print(",\t");
+    Serial.print(fr_brake_temperature_sig); Serial.print(",\t");
+    Serial.print(bl_brake_temperature_sig); Serial.print(",\t");
+    Serial.print(br_brake_temperature_sig); Serial.print(",\t");
+    Serial.println(rtc_sig);
+  #endif
 
   /* Send through CAN */
 }
