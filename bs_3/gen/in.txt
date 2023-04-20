@@ -1,0 +1,11 @@
+struct SLOW_SENSORS {
+  float coolant_temperature;
+  float fl_brake_temperature;
+  float fr_brake_temperature;
+  float bl_brake_temperature;
+  float br_brake_temperature;
+  float ambient_temperature;
+  float inverter_temperature;
+  float coolant_flow;
+  uint8_t hv_state_of_charge;
+};

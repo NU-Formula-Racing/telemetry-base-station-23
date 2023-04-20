@@ -1,0 +1,32 @@
+Refs:
+  float* coolant_temperature;
+  float* fl_brake_temperature;
+  float* fr_brake_temperature;
+  float* bl_brake_temperature;
+  float* br_brake_temperature;
+  float* ambient_temperature;
+  float* inverter_temperature;
+  float* coolant_flow;
+  uint8_t* hv_state_of_charge;
+
+Sizes:
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(float),
+  sizeof(uint8_t),
+
+Inits:
+        .coolant_temperature= &(coolant_temperature_sig.value_ref()),
+        .fl_brake_temperature= &(fl_brake_temperature_sig.value_ref()),
+        .fr_brake_temperature= &(fr_brake_temperature_sig.value_ref()),
+        .bl_brake_temperature= &(bl_brake_temperature_sig.value_ref()),
+        .br_brake_temperature= &(br_brake_temperature_sig.value_ref()),
+        .ambient_temperature= &(ambient_temperature_sig.value_ref()),
+        .inverter_temperature= &(inverter_temperature_sig.value_ref()),
+        .coolant_flow= &(coolant_flow_sig.value_ref()),
+        .hv_state_of_charge= &(hv_state_of_charge_sig.value_ref()),
