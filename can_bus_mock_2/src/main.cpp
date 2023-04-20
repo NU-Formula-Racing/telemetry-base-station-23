@@ -32,9 +32,6 @@
 #define T_MS  1 // std::chrono::milliseconds{1}
 
 /********** MACRO FUNCTIONS **********/
-// Information on simulator dynamics can be found in the corresponding MATLAB file
-// located in project directory `matlab_refs/` in the same repo
-
 /**
  * @brief Quantized saw wave, incrementing by 1 every update and looping within bounds
  * Contract: bounds are not out-of-bounds for corresponding CAN sig
@@ -369,37 +366,37 @@ void loop()
   
   /* Test: print serial data */
   // 8 at a time
-  #ifdef CAN_BUS_HI
-    Serial.print(hv_battery_voltage_sig); Serial.print(",\t");
-    Serial.print(hv_battery_temperature_sig); Serial.print(",\t");
-    Serial.print(tractile_system_status_sig); Serial.print(",\t");
-    Serial.print(accel_percentage_sig); Serial.print(",\t");
-    Serial.print(brake_percentage_sig); Serial.print(",\t");
-    Serial.print(brake_percentage_sig); Serial.print(",\t");
-    Serial.print(hv_battery_current_sig); Serial.print(",\t");
-    Serial.print(hv_max_discharge_sig); Serial.print(",\t");
-    Serial.println(hv_max_regen_sig);
+  // #ifdef CAN_BUS_HI
+  //   Serial.print(hv_battery_voltage_sig); Serial.print(",\t");
+  //   Serial.print(hv_battery_temperature_sig); Serial.print(",\t");
+  //   Serial.print(tractile_system_status_sig); Serial.print(",\t");
+  //   Serial.print(accel_percentage_sig); Serial.print(",\t");
+  //   Serial.print(brake_percentage_sig); Serial.print(",\t");
+  //   Serial.print(brake_percentage_sig); Serial.print(",\t");
+  //   Serial.print(hv_battery_current_sig); Serial.print(",\t");
+  //   Serial.print(hv_max_discharge_sig); Serial.print(",\t");
+  //   Serial.println(hv_max_regen_sig);
 
-    Serial.print(coolant_temperature_sig); Serial.print(",\t");
-    Serial.print(hv_state_of_charge_sig); Serial.print(",\t");
-    Serial.print(ambient_temperature_sig); Serial.print(",\t");
-    Serial.println(coolant_flow_sig);
-  #endif
+  //   Serial.print(coolant_temperature_sig); Serial.print(",\t");
+  //   Serial.print(hv_state_of_charge_sig); Serial.print(",\t");
+  //   Serial.print(ambient_temperature_sig); Serial.print(",\t");
+  //   Serial.println(coolant_flow_sig);
+  // #endif
 
-  #ifdef CAN_BUS_LO
-    Serial.print(fl_wheel_speed_sig); Serial.print(",\t");
-    Serial.print(fr_wheel_speed_sig); Serial.print(",\t");
-    Serial.print(bl_wheel_speed_sig); Serial.print(",\t");
-    Serial.print(br_wheel_speed_sig); Serial.print(",\t");
-    Serial.print(front_brake_pressure_sig); Serial.print(",\t");
-    Serial.println(rear_brake_pressure_sig);
+  // #ifdef CAN_BUS_LO
+  //   Serial.print(fl_wheel_speed_sig); Serial.print(",\t");
+  //   Serial.print(fr_wheel_speed_sig); Serial.print(",\t");
+  //   Serial.print(bl_wheel_speed_sig); Serial.print(",\t");
+  //   Serial.print(br_wheel_speed_sig); Serial.print(",\t");
+  //   Serial.print(front_brake_pressure_sig); Serial.print(",\t");
+  //   Serial.println(rear_brake_pressure_sig);
 
-    Serial.print(fl_brake_temperature_sig); Serial.print(",\t");
-    Serial.print(fr_brake_temperature_sig); Serial.print(",\t");
-    Serial.print(bl_brake_temperature_sig); Serial.print(",\t");
-    Serial.print(br_brake_temperature_sig); Serial.print(",\t");
-    Serial.println(rtc_sig);
-  #endif
+  //   Serial.print(fl_brake_temperature_sig); Serial.print(",\t");
+  //   Serial.print(fr_brake_temperature_sig); Serial.print(",\t");
+  //   Serial.print(bl_brake_temperature_sig); Serial.print(",\t");
+  //   Serial.print(br_brake_temperature_sig); Serial.print(",\t");
+  //   Serial.println(rtc_sig);
+  // #endif
 
   /* Send through CAN */
 }

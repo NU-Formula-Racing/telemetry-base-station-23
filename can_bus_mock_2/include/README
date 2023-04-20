@@ -1,39 +1,27 @@
+### General
 
-This directory is intended for project header files.
+CAN Bus simulator accurate for projected NFR 22-23 sensors, including both fast and slow transmission
+and the distinguishment of 2 busses, HI and LO, the maximum number available on our Teensy firmware board.
 
-A header file is a file containing C declarations and macro definitions
-to be shared between several project source files. You request the use of a
-header file in your project source file (C, C++, etc) located in `src` folder
-by including it, with the C preprocessing directive `#include'.
+Generates values for all CAN sensors slated to be on the DAQ systems with the exception of Inverter.
+The values are not designed to be realistic, but rather highly bounded and well-defined to make the
+process of diagnosing errors from a firmware/communications engineering perspective easier.
 
-```src/main.c
+Information on simulator dynamics can be found in the corresponding MATLAB file `stochastic_sims.m`
+located in the project directory `matlab_refs/` in the same repo.
 
-#include "header.h"
+All program files are located in `src/main.cpp`, including signal declarations, initializations, and updating.
+Bus-specific directives are blocked off using macros corresponding to each priority, which are controlled
+via a separate file.
 
-int main (void)
-{
- ...
-}
-```
+### Flashing
 
-Including a header file produces the same results as copying the header file
-into each source file that needs it. Such copying would be time-consuming
-and error-prone. With a header file, the related declarations appear
-in only one place. If they need to be changed, they can be changed in one
-place, and programs that include the header file will automatically use the
-new version when next recompiled. The header file eliminates the labor of
-finding and changing all the copies as well as the risk that a failure to
-find one copy will result in inconsistencies within a program.
+As of 2023, these are only tested on ESP32 boards as these are used for our CAN sims, but they should be
+able to compile for Teensy boards as well as the differences in CAN interfacing using our library is trivial.
 
-In C, the usual convention is to give header files names that end with `.h'.
-It is most portable to use only letters, digits, dashes, and underscores in
-header file names, and at most one dot.
+To compile for a specific priority board, uncomment one (and *only* one) `CAN_BUS_` macro in the `target.h`
+file in `include/`. This will ensure that only the sensor values specific to that priority are instantiated
+and simulated on that corresponding board.
 
-Read more about using header files in official GCC documentation:
-
-* Include Syntax
-* Include Operation
-* Once-Only Headers
-* Computed Includes
-
-https://gcc.gnu.org/onlinedocs/cpp/Header-Files.html
+To flash an ESP32, wait for the board to start connecting, then press and depress the button right of the
+USB port on the ESP32. A successful flash should show addresses and progress percentages on the build log.
