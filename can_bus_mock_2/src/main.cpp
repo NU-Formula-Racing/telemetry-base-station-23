@@ -321,6 +321,8 @@ void update_fast() {
   USLFL(br_wheel_speed_sig, temp_fl, 0.7f, 2.0f, 9.0f);
   Q_SAW(front_brake_pressure_sig, 0, 63);
 #endif
+
+  bus.Tick();
 }
 
 /**
@@ -341,6 +343,8 @@ void update_slow() {
   C_SAW(bl_brake_temperature_sig, temp_fl, 0.3f, 85.0f, 95.0f);
   C_SAW(br_brake_temperature_sig, temp_fl, 0.3f, 85.0f, 95.0f);
 #endif
+
+  bus.Tick();
 }
 
 /********** PROGRAM **********/
