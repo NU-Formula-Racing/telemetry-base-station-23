@@ -277,6 +277,8 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
 
 #endif
 
+#ifdef TELEMETRY_BASE_STATION_RX
+
 /* Receiver (base board) */
 /**
  * @brief Reformat buffered data to update the values within a struct.
@@ -285,5 +287,7 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
  * @param data_buf      Message buffer received, containing the message type and payload
  */
 void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_buf);
+
+#endif
 
 #endif

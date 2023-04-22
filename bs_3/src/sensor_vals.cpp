@@ -98,16 +98,18 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
 
   // Conditional sensors
   // Handled individually
-  if (*mc & 0b10000) {
-    sensor_data_bytes = (uint8_t*) &(sensor_refs->control);
-    for (i = 0; i < sizeof(sensor_refs->control); ++i) {
-      *(buf_ptr++) = sensor_data_bytes;
-      ++*buf_len;
-    }
-  }
+  // if (*mc & 0b10000) {
+  //   sensor_data_bytes = (uint8_t*) &(sensor_refs->control);
+  //   for (i = 0; i < sizeof(sensor_refs->control); ++i) {
+  //     *(buf_ptr++) = sensor_data_bytes;
+  //     ++*buf_len;
+  //   }
+  // }
 }
 
 #endif
+
+#ifdef TELEMETRY_BASE_STATION_RX
 
 void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_buf) {
   // Recasts for struct and buffer to allow for access to individual bytes
@@ -148,3 +150,5 @@ void deserialize(message_code_t* mc, sensor_vals_t* sensor_vals, uint8_t* data_b
     *(sensor_data_ptr) = *(buf_ptr++);
   }
 }
+
+#endif

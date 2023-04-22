@@ -68,6 +68,6 @@ print("Number of sensors: " + str(len(members)))
 # Create initilization statements for `telemetry.cpp`
 fout.write("\nInits:\n")
 for m in members:
-  fout.write("        ." + m[1] + "= &(" + m[1] + "_sig.value_ref()),\n")
+  fout.write("        ." + m[1] + " = &(" + m[1] + "_sig.value_ref()),\n")
   
 print("Output write complete.")

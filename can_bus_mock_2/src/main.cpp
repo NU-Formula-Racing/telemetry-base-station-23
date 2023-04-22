@@ -121,15 +121,15 @@ VirtualTimerGroup timer_group;
 /* HI Bus Level Sensors */
 #ifdef CAN_BUS_HI
   // High Voltage BMS (values and signalling)
-  CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_discharge_sig;
-  CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_sig;
+  CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_discharge_current_sig;
+  CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_current_sig;
   CANSignal<float, 24, 8, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
   CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
   CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_current_sig;
 
-  CANTXMessage<5> hv_bms_soe_msg{bus, 0x240, 8, T_DS, timer_group,
-    hv_max_discharge_sig,
-    hv_max_regen_sig,
+  CANTXMessage<5> hv_bms_soe_msg{bus, 0x240, 8, T_CS, timer_group,
+    hv_max_discharge_current_sig,
+    hv_max_regen_current_sig,
     hv_battery_voltage_sig,
     hv_battery_temperature_sig,
     hv_battery_current_sig
@@ -137,7 +137,7 @@ VirtualTimerGroup timer_group;
 
   CANSignal<uint8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> hv_state_of_charge_sig;
 
-  CANTXMessage<1> hv_bms_status_msg{bus, 0x241, 8, T_DS, timer_group, 
+  CANTXMessage<1> hv_bms_status_msg{bus, 0x241, 8, T_CS, timer_group, 
     hv_state_of_charge_sig
   };
 
@@ -145,14 +145,14 @@ VirtualTimerGroup timer_group;
   CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> accel_percentage_sig;
   CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> brake_percentage_sig;
 
-  CANTXMessage<2> throttle_values_msg{bus, 0x300, 2, T_DS, timer_group, 
+  CANTXMessage<2> throttle_values_msg{bus, 0x300, 2, T_CS, timer_group, 
     accel_percentage_sig,
     brake_percentage_sig
   };
 
   CANSignal<uint8_t /* enum */, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> tractile_system_status_sig;
 
-  CANTXMessage<1> throttle_status_msg{bus, 0x301, 8, T_DS, timer_group, 
+  CANTXMessage<1> throttle_status_msg{bus, 0x301, 8, T_CS, timer_group, 
     tractile_system_status_sig
   };
 
@@ -160,14 +160,14 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> coolant_temperature_sig;
   CANSignal<float, 32, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> ambient_temperature_sig;
 
-  CANTXMessage<2> ptrain_temp_msg{bus, 0x420, 6, T_DS, timer_group, 
+  CANTXMessage<2> ptrain_temp_msg{bus, 0x420, 6, T_CS, timer_group, 
     coolant_temperature_sig, 
     ambient_temperature_sig
   };
 
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> coolant_flow_sig;
 
-  CANTXMessage<1> coolant_msg{bus, 0x421, 2, T_DS, timer_group, 
+  CANTXMessage<1> coolant_msg{bus, 0x421, 2, T_CS, timer_group, 
     coolant_flow_sig
   };
 #endif
@@ -178,7 +178,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fl_wheel_speed_sig;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fl_brake_temperature_sig;
 
-  CANTXMessage<2> fl_wheel_msg{bus, 0x400, 4, T_DS, timer_group, 
+  CANTXMessage<2> fl_wheel_msg{bus, 0x400, 4, T_CS, timer_group, 
     fl_wheel_speed_sig, 
     fl_brake_temperature_sig
   };
@@ -186,7 +186,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> fr_wheel_speed_sig;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> fr_brake_temperature_sig;
 
-  CANTXMessage<2> fr_wheel_msg{bus, 0x401, 4, T_DS, timer_group, 
+  CANTXMessage<2> fr_wheel_msg{bus, 0x401, 4, T_CS, timer_group, 
     fr_wheel_speed_sig, 
     fr_brake_temperature_sig
   };
@@ -194,7 +194,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> bl_wheel_speed_sig;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> bl_brake_temperature_sig;
 
-  CANTXMessage<2> bl_wheel_msg{bus, 0x402, 4, T_DS, timer_group, 
+  CANTXMessage<2> bl_wheel_msg{bus, 0x402, 4, T_CS, timer_group, 
     bl_wheel_speed_sig, 
     bl_brake_temperature_sig
   };
@@ -202,7 +202,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> br_wheel_speed_sig;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40)> br_brake_temperature_sig;
 
-  CANTXMessage<2> br_wheel_msg{bus, 0x403, 4, T_DS, timer_group, 
+  CANTXMessage<2> br_wheel_msg{bus, 0x403, 4, T_CS, timer_group, 
     br_wheel_speed_sig, 
     br_brake_temperature_sig
   };
@@ -211,7 +211,7 @@ VirtualTimerGroup timer_group;
   CANSignal<uint16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> front_brake_pressure_sig;
   CANSignal<uint16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rear_brake_pressure_sig;
 
-  CANTXMessage<2> brake_pressure_msg{bus, 0x410, 4, T_DS, timer_group, 
+  CANTXMessage<2> brake_pressure_msg{bus, 0x410, 4, T_CS, timer_group, 
     front_brake_pressure_sig, 
     rear_brake_pressure_sig
   };
@@ -220,7 +220,7 @@ VirtualTimerGroup timer_group;
   CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> latitude_sig;
   CANSignal<uint32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> longitude_sig;
 
-  CANTXMessage<2> motion_gps_msg{bus, 0x430, 8, T_DS, timer_group, 
+  CANTXMessage<2> motion_gps_msg{bus, 0x430, 8, T_CS, timer_group, 
     latitude_sig, 
     longitude_sig
   };
@@ -229,7 +229,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_y_sig;
   CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_z_sig;
 
-  CANTXMessage<3> motion_accelerometer_msg{bus, 0x431, 6, T_DS, timer_group, 
+  CANTXMessage<3> motion_accelerometer_msg{bus, 0x431, 6, T_CS, timer_group, 
     accel_x_sig, 
     accel_y_sig, 
     accel_z_sig
@@ -239,7 +239,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_y_sig;
   CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_z_sig;
 
-  CANTXMessage<3> motion_gyroscope_msg{bus, 0x432, 6, T_DS, timer_group, 
+  CANTXMessage<3> motion_gyroscope_msg{bus, 0x432, 6, T_CS, timer_group, 
     gyro_x_sig, 
     gyro_y_sig, 
     gyro_z_sig
@@ -248,7 +248,7 @@ VirtualTimerGroup timer_group;
   // RTC
   CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rtc_sig;
 
-  CANTXMessage<1> rtc_msg{bus, 0x430, 8, T_DS, timer_group, 
+  CANTXMessage<1> rtc_msg{bus, 0x430, 8, T_CS, timer_group, 
     rtc_sig
   };
 #endif
@@ -276,8 +276,8 @@ void sim_init() {
   accel_percentage_sig = 0;
   brake_percentage_sig = 0;
   hv_battery_current_sig = 0.0f;
-  hv_max_discharge_sig = 0.0f;
-  hv_max_regen_sig = 0.0f;
+  hv_max_discharge_current_sig = 0.0f;
+  hv_max_regen_current_sig = 0.0f;
   coolant_flow_sig = 55.0f;
 #endif
 
@@ -322,7 +322,7 @@ void update_fast() {
   Q_SAW(front_brake_pressure_sig, 0, 63);
 #endif
 
-  bus.Tick();
+  // bus.Tick();
 }
 
 /**
@@ -344,7 +344,7 @@ void update_slow() {
   C_SAW(br_brake_temperature_sig, temp_fl, 0.3f, 85.0f, 95.0f);
 #endif
 
-  bus.Tick();
+  // bus.Tick();
 }
 
 /********** PROGRAM **********/
@@ -378,8 +378,8 @@ void loop()
   //   Serial.print(brake_percentage_sig); Serial.print(",\t");
   //   Serial.print(brake_percentage_sig); Serial.print(",\t");
   //   Serial.print(hv_battery_current_sig); Serial.print(",\t");
-  //   Serial.print(hv_max_discharge_sig); Serial.print(",\t");
-  //   Serial.println(hv_max_regen_sig);
+  //   Serial.print(hv_max_discharge_current_sig); Serial.print(",\t");
+  //   Serial.println(hv_max_regen_current_sig);
 
   //   Serial.print(coolant_temperature_sig); Serial.print(",\t");
   //   Serial.print(hv_state_of_charge_sig); Serial.print(",\t");
