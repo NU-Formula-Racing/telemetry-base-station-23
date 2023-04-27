@@ -160,7 +160,7 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   // RTC
   CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rtc_sig;
 
-  CANRXMessage<1> rtc_msg{bus_lo, 0x430, rtc_sig};
+  CANRXMessage<1> rtc_msg{bus_lo, 0x440, rtc_sig};
 #endif
 
 /********** FW VARIABLES **********/
@@ -175,6 +175,10 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 #ifdef TELEMETRY_BASE_STATION_RX
   // Sensor value data struct
   sensor_vals_t sensor_vals;
+
+  // Debug var
+  uint8_t* buf_ptr;
+  uint8_t* sensor_vals_ptr;
 #endif
 
 #ifdef TELEMETRY_BASE_STATION_TX
@@ -327,10 +331,13 @@ void tx_send() {
       serialize(&data_id, &sensor_refs, buf, &buf_len);
 
       // Send data and verify completion
-      delay(10);
+      // delay(10);
       rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
-      delay(10);
+      // delay(10);
       rf95.waitPacketSent();
+      
+      // uint32_t rtc = rtc_sig.value_ref();
+      // rf95.send((uint8_t*) &(rtc_sig.value_ref()), 4);
     #endif
   }
 }
@@ -346,15 +353,24 @@ void rx_task() {
     #ifdef TELEMETRY_BASE_STATION_RX
       // Check if a message has been received, and retrieve its data and length
       if (rf95.recv(buf, &buf_len)) {
-        // Receive successful
+        // // Receive successful
         // RH_RF95::printBuffer("Received ", buf, buf_len);
         // Serial.print("Got: "); Serial.println((char*) buf);
+
+        // sensor_vals_ptr = (uint8_t*) &(sensor_vals.fast.rtc);
+        // buf_ptr = buf;
+        // *(sensor_vals_ptr++) = *(buf_ptr++);
+        // *(sensor_vals_ptr++) = *(buf_ptr++);
+        // *(sensor_vals_ptr++) = *(buf_ptr++);
+        // *sensor_vals_ptr = *buf_ptr;
+        // Serial.println(sensor_vals.fast.rtc);
 
         // Parse data
         deserialize(&data_id, &sensor_vals, buf);
 
         // Format data as JSON and print it
         sv_fmt_json(&data_id, &sensor_vals);
+
       } else {
         Serial.println("Receive failed");
       }

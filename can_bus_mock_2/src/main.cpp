@@ -248,7 +248,7 @@ VirtualTimerGroup timer_group;
   // RTC
   CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> rtc_sig;
 
-  CANTXMessage<1> rtc_msg{bus, 0x430, 8, T_CS, timer_group, 
+  CANTXMessage<1> rtc_msg{bus, 0x440, 8, T_CS, timer_group, 
     rtc_sig
   };
 #endif
