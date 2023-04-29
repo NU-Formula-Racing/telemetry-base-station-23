@@ -1,29 +1,13 @@
 Refs:
-  float* fl_wheel_speed;
-  float* fr_wheel_speed;
-  float* bl_wheel_speed;
-  float* br_wheel_speed;
-  float* hv_battery_voltage;
-  float* motor_temperature;
-  float* accel_x;
-  float* accel_y;
-  float* accel_z;
-  float* gyro_x;
-  float* gyro_y;
-  float* gyro_z;
-  uint32_t* latitude;
-  uint32_t* longitude;
-  float* rpm;
-  float* hv_battery_current;
-  float* hv_max_discharge_current;
-  float* hv_max_regen_current;
-  uint32_t* rtc;
-  uint16_t* front_brake_pressure;
-  uint16_t* rear_brake_pressure;
-  int8_t* hv_battery_temperature;
-  uint8_t* tractile_system_status;
-  uint8_t* accel_percentage;
-  uint8_t* brake_percentage;
+  float* coolant_temperature;
+  float* fl_brake_temperature;
+  float* fr_brake_temperature;
+  float* bl_brake_temperature;
+  float* br_brake_temperature;
+  float* ambient_temperature;
+  float* inverter_temperature;
+  float* coolant_flow;
+  uint8_t* hv_state_of_charge;
 
 Sizes:
   sizeof(float),
@@ -34,47 +18,15 @@ Sizes:
   sizeof(float),
   sizeof(float),
   sizeof(float),
-  sizeof(float),
-  sizeof(float),
-  sizeof(float),
-  sizeof(float),
-  sizeof(uint32_t),
-  sizeof(uint32_t),
-  sizeof(float),
-  sizeof(float),
-  sizeof(float),
-  sizeof(float),
-  sizeof(uint32_t),
-  sizeof(uint16_t),
-  sizeof(uint16_t),
-  sizeof(int8_t),
-  sizeof(uint8_t),
-  sizeof(uint8_t),
   sizeof(uint8_t),
 
 Inits:
-        .fl_wheel_speed = &(fl_wheel_speed_sig.value_ref()),
-        .fr_wheel_speed = &(fr_wheel_speed_sig.value_ref()),
-        .bl_wheel_speed = &(bl_wheel_speed_sig.value_ref()),
-        .br_wheel_speed = &(br_wheel_speed_sig.value_ref()),
-        .hv_battery_voltage = &(hv_battery_voltage_sig.value_ref()),
-        .motor_temperature = &(motor_temperature_sig.value_ref()),
-        .accel_x = &(accel_x_sig.value_ref()),
-        .accel_y = &(accel_y_sig.value_ref()),
-        .accel_z = &(accel_z_sig.value_ref()),
-        .gyro_x = &(gyro_x_sig.value_ref()),
-        .gyro_y = &(gyro_y_sig.value_ref()),
-        .gyro_z = &(gyro_z_sig.value_ref()),
-        .latitude = &(latitude_sig.value_ref()),
-        .longitude = &(longitude_sig.value_ref()),
-        .rpm = &(rpm_sig.value_ref()),
-        .hv_battery_current = &(hv_battery_current_sig.value_ref()),
-        .hv_max_discharge_current = &(hv_max_discharge_current_sig.value_ref()),
-        .hv_max_regen_current = &(hv_max_regen_current_sig.value_ref()),
-        .rtc = &(rtc_sig.value_ref()),
-        .front_brake_pressure = &(front_brake_pressure_sig.value_ref()),
-        .rear_brake_pressure = &(rear_brake_pressure_sig.value_ref()),
-        .hv_battery_temperature = &(hv_battery_temperature_sig.value_ref()),
-        .tractile_system_status = &(tractile_system_status_sig.value_ref()),
-        .accel_percentage = &(accel_percentage_sig.value_ref()),
-        .brake_percentage = &(brake_percentage_sig.value_ref()),
+        .coolant_temperature = &(coolant_temperature_sig.value_ref()),
+        .fl_brake_temperature = &(fl_brake_temperature_sig.value_ref()),
+        .fr_brake_temperature = &(fr_brake_temperature_sig.value_ref()),
+        .bl_brake_temperature = &(bl_brake_temperature_sig.value_ref()),
+        .br_brake_temperature = &(br_brake_temperature_sig.value_ref()),
+        .ambient_temperature = &(ambient_temperature_sig.value_ref()),
+        .inverter_temperature = &(inverter_temperature_sig.value_ref()),
+        .coolant_flow = &(coolant_flow_sig.value_ref()),
+        .hv_state_of_charge = &(hv_state_of_charge_sig.value_ref()),

@@ -217,11 +217,11 @@ bool telemetry_setup() {
       // you can set transmitter powers from 5 to 23 dBm:
       rf95.setTxPower(23, false);
     } else {
-      // Serial.println("setFrequency failed");
+      Serial.println("setFrequency failed");
       rfm95_init_successful = false;
     }
   } else {
-    // Serial.println("LoRa radio init failed");
+    Serial.println("LoRa radio init failed");
     rfm95_init_successful = false;
   }
 

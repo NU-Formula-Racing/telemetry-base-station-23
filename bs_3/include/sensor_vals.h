@@ -222,8 +222,8 @@ typedef struct SENSOR_REFERENCES sensor_refs_t;
 
 /********** DEFINES **********/
 /* Byte size of sensor vals */
-#define FAST_SENSORS_LEN sizeof(fast_sensors_t)
-#define MED_SENSORS_LEN sizeof(med_sensors_t)
+#define FAST_SENSORS_LEN sizeof(fast_sensors_t) // Current: 84
+#define MED_SENSORS_LEN sizeof(med_sensors_t) // Current: 33
 #define SLOW_SENSORS_LEN sizeof(slow_sensors_t)
 #define SENSOR_VALS_LEN sizeof(sensor_vals_t)
 

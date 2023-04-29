@@ -38,14 +38,43 @@ if not in_path.exists(): # Assumes header file is present
 # Store member field (type, name)
 members = []
 
+# Measure sizeof struct (assuming max packed, no alignment)
+size = 0
+
+# Parse struct
 fin = open(in_path, "r")
-fin.readline()
+fin.readline() # Ignore struct declaration line (not member fields)
 for line in fin.readlines():
+  # Check if end of struct reached
   if len(line) <= 2:
     break
+  
+  # Isolate relevant information
   words = line.split(" ")
   members.append((words[2], words[3].rstrip(";\n")))
+  
+  # Add size of member to total
+  match words[2]:
+    case "float":
+      size += 4
+    case "uint8_t":
+      size += 1
+    case "uint16_t":
+      size += 2
+    case "uint32_t":
+      size += 4
+    case "int8_t":
+      size += 1
+    case "int16_t":
+      size += 2
+    case "int32_t":
+      size += 4
+    case other:
+      print("Unknown type found:" + words[2]) 
 fin.close()
+
+# Get size of struct for metrics
+print("sizeof =", size)
 
 # Open output file
 print("Processing data...")
@@ -63,7 +92,7 @@ for m in members:
   fout.write("  sizeof(" + m[0] + "),\n")
   
 # Get total number of sensors for macro
-print("Number of sensors: " + str(len(members)))
+print("Number of sensors:", len(members))
 
 # Create initilization statements for `telemetry.cpp`
 fout.write("\nInits:\n")
