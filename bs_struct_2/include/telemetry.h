@@ -2,8 +2,8 @@
  * @file telemetry.h
  * @author Chris Uustal, Derek Guo
  * @brief Header file for telemetry firmware server (TX) and client (RX) functions
- * @version 1
- * @date 2022-10-20
+ * @version 2
+ * @date 2023-04-29
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -27,6 +27,9 @@
 /* CAN Priority */
 #define CAN_BUS_LO 1
 #define CAN_BUS_HI 2
+
+/* Linear regulator */
+#define TEENSY40_CE 4
 
 /********** VARIABLES **********/
 // Singleton instance of the radio driver

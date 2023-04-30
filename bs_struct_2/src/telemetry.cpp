@@ -121,6 +121,10 @@ bool telemetry_setup() {
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
 
+  // Turn on linear regulator
+  pinMode(TEENSY40_CE, OUTPUT);
+  digitalWrite(TEENSY40_CE, LOW);
+
   // Set up RadioHead
   if (rf95.init() == true) {
     // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
