@@ -71,7 +71,7 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   // High Voltage BMS (values and signalling)
   CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_discharge_current_sig;
   CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_current_sig;
-  CANSignal<float, 24, 8, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
+  CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
   CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
   CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_current_sig;
 

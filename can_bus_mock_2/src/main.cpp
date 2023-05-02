@@ -123,7 +123,7 @@ VirtualTimerGroup timer_group;
   // High Voltage BMS (values and signalling)
   CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_discharge_current_sig;
   CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_current_sig;
-  CANSignal<float, 24, 8, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
+  CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
   CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
   CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_current_sig;
 
@@ -267,17 +267,17 @@ float temp_fl;
  */
 void sim_init() {
 #ifdef CAN_BUS_HI
-  hv_battery_voltage_sig = 0;
-  hv_battery_temperature_sig = 0;
+  hv_battery_voltage_sig = 20; // 0;
+  hv_battery_temperature_sig = 20; // 0;
   coolant_temperature_sig = 90.0f;
   hv_state_of_charge_sig = 4;
-  tractile_system_status_sig = 0;
+  tractile_system_status_sig = 20; // 0;
   ambient_temperature_sig = 77.0f;
-  accel_percentage_sig = 0;
-  brake_percentage_sig = 0;
-  hv_battery_current_sig = 0.0f;
-  hv_max_discharge_current_sig = 0.0f;
-  hv_max_regen_current_sig = 0.0f;
+  accel_percentage_sig = 20; // 0;
+  brake_percentage_sig = 20; // 0;
+  hv_battery_current_sig = 20.0f; // 0.0f;
+  hv_max_discharge_current_sig = 20.0f; // 0.0f;
+  hv_max_regen_current_sig = 20.0f; // 0.0f;
   coolant_flow_sig = 55.0f;
 #endif
 
@@ -286,18 +286,18 @@ void sim_init() {
   fr_wheel_speed_sig = 3.4f;
   bl_wheel_speed_sig = 3.4f;
   br_wheel_speed_sig = 3.4f;
-  front_brake_pressure_sig = 0;
-  rear_brake_pressure_sig = 0;
+  front_brake_pressure_sig = 20; // 0;
+  rear_brake_pressure_sig = 20; // 0;
   fl_brake_temperature_sig = 85.0f;
   fr_brake_temperature_sig = 85.0f;
   bl_brake_temperature_sig = 85.0f;
   br_brake_temperature_sig = 85.0f;
   accel_x_sig = 13.0f;
-  accel_y_sig = -3.0f;
+  accel_y_sig = 3.0f; // -3.0f;
   accel_z_sig = 7.0f;
-  gyro_x_sig = 0.0f;
-  gyro_y_sig = 0.0f;
-  gyro_z_sig = 0.0f;
+  gyro_x_sig = 20.0f; // 0.0f;
+  gyro_y_sig = 20.0f; // 0.0f;
+  gyro_z_sig = 20.0f; // 0.0f;
   latitude_sig = 69;
   longitude_sig = 69;
   rtc_sig = 1337;
@@ -359,8 +359,8 @@ void setup()
   sim_init();
 
   /* Add update timers */
-  timer_group.AddTimer(T_CS, update_fast);
-  timer_group.AddTimer(T_SEC, update_slow);
+  // timer_group.AddTimer(T_CS, update_fast);
+  // timer_group.AddTimer(T_SEC, update_slow);
 }
 
 void loop()

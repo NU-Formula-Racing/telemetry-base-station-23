@@ -28,6 +28,9 @@
 #define CAN_BUS_LO 1
 #define CAN_BUS_HI 2
 
+/* Linear regulator */
+#define TEENSY40_CE 4
+
 /********** VARIABLES **********/
 // Singleton instance of the radio driver
 extern RH_RF95 rf95;
