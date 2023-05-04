@@ -125,7 +125,7 @@ VirtualTimerGroup timer_group;
   CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_current_sig;
   CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
   CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
-  CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_current_sig;
+  CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), true> hv_battery_current_sig;
 
   CANTXMessage<5> hv_bms_soe_msg{bus, 0x240, 8, T_CS, timer_group,
     hv_max_discharge_current_sig,
@@ -142,7 +142,7 @@ VirtualTimerGroup timer_group;
   };
 
   // Throttle
-  CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> accel_percentage_sig;
+  CANSignal<int8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> accel_percentage_sig;
   CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> brake_percentage_sig;
 
   CANTXMessage<2> throttle_values_msg{bus, 0x300, 2, T_CS, timer_group, 
@@ -217,17 +217,17 @@ VirtualTimerGroup timer_group;
   };
 
   // Motion Board
-  CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> latitude_sig;
-  CANSignal<uint32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> longitude_sig;
+  CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> latitude_sig;
+  CANSignal<int32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> longitude_sig;
 
   CANTXMessage<2> motion_gps_msg{bus, 0x430, 8, T_CS, timer_group, 
     latitude_sig, 
     longitude_sig
   };
 
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_x_sig;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_y_sig;
-  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_z_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> accel_x_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> accel_y_sig;
+  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> accel_z_sig;
 
   CANTXMessage<3> motion_accelerometer_msg{bus, 0x431, 6, T_CS, timer_group, 
     accel_x_sig, 
@@ -235,9 +235,9 @@ VirtualTimerGroup timer_group;
     accel_z_sig
   };
 
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_x_sig;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_y_sig;
-  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_z_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> gyro_x_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> gyro_y_sig;
+  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> gyro_z_sig;
 
   CANTXMessage<3> motion_gyroscope_msg{bus, 0x432, 6, T_CS, timer_group, 
     gyro_x_sig, 

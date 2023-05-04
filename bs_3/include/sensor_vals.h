@@ -52,8 +52,8 @@ struct FAST_SENSORS {
   float gyro_x;
   float gyro_y;
   float gyro_z;
-  uint32_t latitude;
-  uint32_t longitude;
+  int32_t latitude;
+  int32_t longitude;
   float rpm;
   float hv_battery_current;
   float hv_max_discharge_current;
@@ -63,7 +63,7 @@ struct FAST_SENSORS {
   uint16_t rear_brake_pressure;
   int8_t hv_battery_temperature;
   uint8_t tractile_system_status;
-  uint8_t accel_percentage;
+  int8_t accel_percentage;
   uint8_t brake_percentage;
 };
 typedef struct FAST_SENSORS fast_sensors_t;
@@ -83,8 +83,8 @@ struct FAST_SENSORS_REF {
   float* gyro_x;
   float* gyro_y;
   float* gyro_z;
-  uint32_t* latitude;
-  uint32_t* longitude;
+  int32_t* latitude;
+  int32_t* longitude;
   float* rpm;
   float* hv_battery_current;
   float* hv_max_discharge_current;
@@ -94,7 +94,7 @@ struct FAST_SENSORS_REF {
   uint16_t* rear_brake_pressure;
   int8_t* hv_battery_temperature;
   uint8_t* tractile_system_status;
-  uint8_t* accel_percentage;
+  int8_t* accel_percentage;
   uint8_t* brake_percentage;
 };
 typedef struct FAST_SENSORS_REF fast_sensor_refs_t;
@@ -113,8 +113,8 @@ const size_t fast_sensors_size[NUM_FAST_SENSORS] = {
   sizeof(float),
   sizeof(float),
   sizeof(float),
-  sizeof(uint32_t),
-  sizeof(uint32_t),
+  sizeof(int32_t),
+  sizeof(int32_t),
   sizeof(float),
   sizeof(float),
   sizeof(float),
@@ -124,7 +124,7 @@ const size_t fast_sensors_size[NUM_FAST_SENSORS] = {
   sizeof(uint16_t),
   sizeof(int8_t),
   sizeof(uint8_t),
-  sizeof(uint8_t),
+  sizeof(int8_t),
   sizeof(uint8_t)
 };
 

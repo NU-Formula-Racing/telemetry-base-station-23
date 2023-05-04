@@ -73,7 +73,7 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0)> hv_max_regen_current_sig;
   CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0)> hv_battery_voltage_sig;
   CANSignal<int8_t, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40)> hv_battery_temperature_sig;
-  CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(-40)> hv_battery_current_sig;
+  CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), true> hv_battery_current_sig;
 
   CANRXMessage<5> hv_bms_soe_msg{bus_hi, 0x240, hv_max_discharge_current_sig, hv_max_regen_current_sig, hv_battery_voltage_sig, hv_battery_temperature_sig, hv_battery_current_sig};
 
@@ -82,7 +82,7 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   CANRXMessage<1> hv_bms_status_msg{bus_hi, 0x241, hv_state_of_charge_sig};
 
   // Throttle
-  CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> accel_percentage_sig;
+  CANSignal<int8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> accel_percentage_sig;
   CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> brake_percentage_sig;
 
   CANRXMessage<2> throttle_values_msg{bus_hi, 0x300, accel_percentage_sig, brake_percentage_sig};
@@ -140,20 +140,20 @@ uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   CANRXMessage<2> brake_pressure_msg{bus_lo, 0x410, front_brake_pressure_sig, rear_brake_pressure_sig};
 
   // Motion Board
-  CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> latitude_sig;
-  CANSignal<uint32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)> longitude_sig;
+  CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> latitude_sig;
+  CANSignal<int32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> longitude_sig;
 
   CANRXMessage<2> motion_gps_msg{bus_lo, 0x430, latitude_sig, longitude_sig};
 
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_x_sig;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_y_sig;
-  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> accel_z_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> accel_x_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> accel_y_sig;
+  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> accel_z_sig;
 
   CANRXMessage<3> motion_accelerometer_msg{bus_lo, 0x431, accel_x_sig, accel_y_sig, accel_z_sig};
 
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_x_sig;
-  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_y_sig;
-  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0)> gyro_z_sig;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> gyro_x_sig;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> gyro_y_sig;
+  CANSignal<float, 32, 16, CANTemplateConvertFloat(0.0005), CANTemplateConvertFloat(0), true> gyro_z_sig;
 
   CANRXMessage<3> motion_gyroscope_msg{bus_lo, 0x432, gyro_x_sig, gyro_y_sig, gyro_z_sig};
 

@@ -21,7 +21,7 @@
  * Only uncomment ONE or too many CAN signals may get sent!
  */
 
-#define CAN_BUS_HI
-// #define CAN_BUS_LO
+// #define CAN_BUS_HI
+#define CAN_BUS_LO
 
 #endif
