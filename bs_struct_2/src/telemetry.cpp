@@ -123,7 +123,7 @@ bool telemetry_setup() {
 
   // Turn on linear regulator
   pinMode(TEENSY40_CE, OUTPUT);
-  digitalWrite(TEENSY40_CE, LOW);
+  digitalWrite(TEENSY40_CE, HIGH);
 
   // Set up RadioHead
   if (rf95.init() == true) {
