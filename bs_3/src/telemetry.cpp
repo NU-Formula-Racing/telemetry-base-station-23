@@ -328,20 +328,28 @@ void tx_tick_slow() {
 void tx_send() {
   if (rfm95_init_successful == true) {
     #ifdef TELEMETRY_BASE_STATION_TX
-      // From the flags, transcribe them into a singular code, then reset flags
-      get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
+      // // From the flags, transcribe them into a singular code, then reset flags
+      // get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
       
-      // // Serialize the data
-      serialize(&data_id, &sensor_refs, buf, &buf_len);
+      // // // Serialize the data
+      // serialize(&data_id, &sensor_refs, buf, &buf_len);
 
-      // Send data and verify completion
-      // delay(10);
-      rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
-      // delay(10);
-      rf95.waitPacketSent();
+      // // Send data and verify completion
+      // // delay(10);
+      // rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
+      // // delay(10);
+      // rf95.waitPacketSent();
       
-      // uint32_t rtc = rtc_sig.value_ref();
-      // rf95.send((uint8_t*) &(rtc_sig.value_ref()), 4);
+      // Test: accuracy
+      Serial.print("accel: (");
+      Serial.print("x: "); Serial.print(accel_x_sig.value_ref());
+      Serial.print(", y: "); Serial.print(accel_y_sig.value_ref());
+      Serial.print(", z: "); Serial.print(accel_z_sig.value_ref());
+      Serial.print("), gyro: (");
+      Serial.print("x: "); Serial.print(gyro_x_sig.value_ref());
+      Serial.print(", y: "); Serial.print(gyro_y_sig.value_ref());
+      Serial.print(", z: "); Serial.print(gyro_z_sig.value_ref());
+      Serial.println(")");
     #endif
   }
 }
