@@ -35,5 +35,5 @@ void sv_fmt_json(message_code_t* mc, sensor_vals_t* sv) {
   Serial.print(",\"inverter_temperature\":"); Serial.print(sv->slow.inverter_temperature);
   Serial.print(",\"coolant_flow\":"); Serial.print(sv->slow.coolant_flow);
   Serial.print(",\"hv_state_of_charge\":"); Serial.print(sv->slow.hv_state_of_charge);
-  Serial.println("}");
+  Serial.println("}}");
 }

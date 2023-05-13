@@ -207,7 +207,10 @@ for l in slow_members:
 for l in cond_members:
   target.write(l)
 # End JSON and start newline
-target.write("  Serial.println(\"}\");\n")
+if cond_members.len() == 0:
+  target.write("  Serial.println(\"}}\");\n")
+else:
+  target.write("  Serial.println(\"}\");\n")
 
 # Close target file
 target.write('}') # Finish function

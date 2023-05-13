@@ -216,6 +216,9 @@ bool telemetry_setup() {
     if (rf95.setFrequency(RF95_FREQ) == true) {
       // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
+      // Increase the bandwidth at the cost of range. Needs to be tested
+      rf95.setSignalBandwidth(250000);
+
       // The default transmitter power is 13dBm, using PA_BOOST.
       // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
       // you can set transmitter powers from 5 to 23 dBm:
@@ -294,6 +297,9 @@ bool telemetry_setup() {
   #endif
 
   return rfm95_init_successful;
+
+  // uint64_t *my_buffer;
+  // coolant_temperature_sig.EncodeSignal(my_buffer);
 }
 
 /*** TRANSCEIVER CODE ***/
@@ -328,28 +334,23 @@ void tx_tick_slow() {
 void tx_send() {
   if (rfm95_init_successful == true) {
     #ifdef TELEMETRY_BASE_STATION_TX
-      // // From the flags, transcribe them into a singular code, then reset flags
-      // get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
+      // From the flags, transcribe them into a singular code, then reset flags
+      get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
       
-      // // // Serialize the data
-      // serialize(&data_id, &sensor_refs, buf, &buf_len);
+      // // Serialize the data
+      serialize(&data_id, &sensor_refs, buf, &buf_len);
 
-      // // Send data and verify completion
-      // // delay(10);
-      // rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
-      // // delay(10);
-      // rf95.waitPacketSent();
+      // Send data and verify completion
+      // delay(10);
+      rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
+      // delay(10);
+      rf95.waitPacketSent();
       
       // Test: accuracy
-      Serial.print("accel: (");
-      Serial.print("x: "); Serial.print(accel_x_sig.value_ref());
-      Serial.print(", y: "); Serial.print(accel_y_sig.value_ref());
-      Serial.print(", z: "); Serial.print(accel_z_sig.value_ref());
-      Serial.print("), gyro: (");
-      Serial.print("x: "); Serial.print(gyro_x_sig.value_ref());
-      Serial.print(", y: "); Serial.print(gyro_y_sig.value_ref());
-      Serial.print(", z: "); Serial.print(gyro_z_sig.value_ref());
-      Serial.println(")");
+      Serial.print("fl: "); Serial.print(fl_wheel_speed_sig.value_ref());
+      Serial.print(", fr: "); Serial.print(fr_wheel_speed_sig.value_ref());
+      Serial.print(", bl: "); Serial.print(bl_wheel_speed_sig.value_ref());
+      Serial.print(", br: "); Serial.println(br_wheel_speed_sig.value_ref());
     #endif
   }
 }
