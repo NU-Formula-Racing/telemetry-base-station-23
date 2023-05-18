@@ -65,6 +65,14 @@ bool rfm95_init_successful = true;
 
   // Additional 3 bytes appended at end: 2 bytes for packetnum, 1 byte for null-terminator
   // Total packet size: 23 bytes < capacity
+
+  // Control for whether or not to send a short or long buffer
+  // Short: false
+  // Long:  true
+  bool switchback = false;
+
+  // Buffer lengths
+  uint8_t buf_lens[2] = {4, 128};
 #endif
 
 /* Packet */
@@ -94,12 +102,6 @@ uint16_t rear_brake_pressure;
   float bl_brake_temperature_true;
   float br_wheel_speed_true;
   float br_brake_temperature_true;
-
-  // Number of successful receptions
-  uint32_t counter = 0;
-
-  // Total number of loops
-  uint32_t total = 0;
 #endif
 
 /********** PUBLIC FUNCTION DEFINITIONS **********/
@@ -119,11 +121,18 @@ bool telemetry_setup() {
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
 
+  // Turn on linear regulator
+  pinMode(TEENSY40_CE, OUTPUT);
+  digitalWrite(TEENSY40_CE, HIGH);
+
   // Set up RadioHead
   if (rf95.init() == true) {
     // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
     if (rf95.setFrequency(RF95_FREQ) == true) {
       // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+
+      // Double the bandwidth
+      rf95.setSignalBandwidth(250000);
 
       // The default transmitter power is 13dBm, using PA_BOOST.
       // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
@@ -177,12 +186,26 @@ void tx_task() {
       // Update CAN data
       can_bus.Tick();
 
-      // Re-encode floats to 
+      // Place packetnum in packet
       visitor = (uint8_t*) &packetnum;
       packet[0] = *(visitor++);
       packet[1] = *(visitor++);
       packet[2] = *(visitor++);
       packet[3] = *(visitor++);
+
+      // Place switch in packet
+      packet[0] = (uint8_t) switchback;
+
+      // Add additional data based on switch choice
+      if (switchback) {
+        for (size_t i = 4; i < buf_lens[1]; ++i) {
+          packet[i] = 1;
+        }
+      }
+
+      // Send data
+      rf95.send(packet, buf_lens[(size_t) switchback]);
+      rf95.waitPacketSent();
 
       // Test: print data to Serial
       // Serial.print("Sending WS { FL: "); Serial.print(float(fl_wheel_speed_sig));
@@ -221,14 +244,17 @@ void tx_task() {
       // stob((char*) &packetnum, packet + 20);
       packetnum++;
 
+      // Flip the switch
+      switchback = !switchback;
+
       // Serial.print("Packet: "); Serial.println(packet);
       // RH_RF95::printBuffer("Packet ", (uint8_t*) packet, PACKET_SIZE);
       
-      // Send data and verify completion
-      // delay(10);
-      rf95.send(packet, 32);
-      // delay(10);
-      rf95.waitPacketSent();
+      // // Send data and verify completion
+      // // delay(10);
+      // rf95.send(packet, 32);
+      // // delay(10);
+      // rf95.waitPacketSent();
     #endif
   }
 }
@@ -247,19 +273,19 @@ void rx_task() {
     // The buffer should match exactly the length of the message
     if (rf95.recv(packet, &len)) {
       // Receive successful
-      // RH_RF95::printBuffer("Received ", packet, len);
-      // Serial.println(len);
+      RH_RF95::printBuffer("Received ", packet, len);
+      Serial.println(len);
 
       // Serial.print("Got: ");
-      visitor = (uint8_t*) &packetnum;
-      *(visitor++) = packet[0];
-      *(visitor++) = packet[1];
-      *(visitor++) = packet[2];
-      *(visitor++) = packet[3];
-      Serial.print(counter); Serial.print("\t");
-      Serial.print(packetnum); Serial.print("\t");
-      Serial.println(total);
-      ++counter;
+      // visitor = (uint8_t*) &packetnum;
+      // *(visitor++) = packet[0];
+      // *(visitor++) = packet[1];
+      // *(visitor++) = packet[2];
+      // *(visitor++) = packet[3];
+      // Serial.print(counter); Serial.print("\t");
+      // Serial.print(packetnum); Serial.print("\t");
+      // Serial.println(total);
+      // ++counter;
 
       // Serial.println((char*) packet);
 
@@ -303,11 +329,6 @@ void rx_task() {
     } else {
       Serial.println("Receive failed");
     }
-  } else if (counter > 0) {
-    Serial.print("Nil\t"); 
-    Serial.print(packetnum - counter); Serial.print("\t");
-    Serial.println(total);
   }
-  ++total;
   #endif
 }

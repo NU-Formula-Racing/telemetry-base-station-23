@@ -117,6 +117,26 @@ Their description and results are described below:
 4) Aside: amount of time the LoRa is in transmission (data rate)
 -  
 
--  For freq 915 MHz, bandwidth 125 kHz, power 23 dBm, code Rate 4 / 5, spreading factor 7 (128), 4 preamble symbols
+-  Defaults: For freq 915 MHz, bandwidth 125 kHz, power 23 dBm, code Rate 4 / 5, spreading factor 7 (128), 4 preamble symbols
 
 -  172.288 ms for 32 bytes
+
+5) Variable packet size
+-  NOTE: going forward, the bandwidth used is 250 kHz, not the default
+-  This test is to confirm whether or not Radiohead's RF95 driver classes support use of variable packet sizes, as that
+   was a previous issue. To do this, the TX is set up to alternate between sending 4 (short) and 128 (long) bytes.
+
+-  To do so, the TX uses a `switchback` boolean control that increases buffer size when set to true. In both cases, the TX
+   encodes either a `packetnum` counter variable (4 bytes) or the `switchback` (1 byte), both of which cover the entire data
+   content of the short buffer and the first 4 bytes of the long buffer. To verify that LoRa actually transmits additional
+   data for the long buffer, the remaining 124 bytes are set to 1.
+
+-  The TX buffer length is set based on an index (provided by `switchback`) of a table for the buffer length, sending at 100 ms.
+
+-  The RX simply receives the buffer and prints it, and its length. Its reception rate is at 1 ms.
+
+-  Results confirmed that RadioHead does support a variable buffer sizes, contradicting previous test results. This could suggest
+   that previous tests had bugs in their code that prevented them from properly reading a buffer size. Previous tests used a
+   variable that changed based on the desired size, while this test used elements from an array. Thus, it is possible that the
+   internal SPI functions used by the RH drivers do not work properly when given a variable with the same reference as opposed
+   to different references. Nonetheless, this does confirm that optimizations to reduce packet lengths are viable on RH.

@@ -21,12 +21,12 @@ void setup() {
   // Add tasks to timer
   #ifdef TELEMETRY_BASE_STATION_TX
     Serial.println("CAN-LoRa test: TX");
-    timer_group.AddTimer(1U, tx_task);
+    timer_group.AddTimer(100U, tx_task);
   #endif
 
   #ifdef TELEMETRY_BASE_STATION_RX
     Serial.println("CAN-LoRa test: RX");
-    timer_group.AddTimer(38U, rx_task);
+    timer_group.AddTimer(1U, rx_task);
   #endif
 }
 
