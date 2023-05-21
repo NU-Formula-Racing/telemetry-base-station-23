@@ -346,11 +346,11 @@ void tx_send() {
       // delay(10);
       rf95.waitPacketSent();
       
-      // Test: accuracy
-      Serial.print("fl: "); Serial.print(fl_wheel_speed_sig.value_ref());
-      Serial.print(", fr: "); Serial.print(fr_wheel_speed_sig.value_ref());
-      Serial.print(", bl: "); Serial.print(bl_wheel_speed_sig.value_ref());
-      Serial.print(", br: "); Serial.println(br_wheel_speed_sig.value_ref());
+      // // Test: accuracy
+      // Serial.print("fl: "); Serial.print(fl_wheel_speed_sig.value_ref());
+      // Serial.print(", fr: "); Serial.print(fr_wheel_speed_sig.value_ref());
+      // Serial.print(", bl: "); Serial.print(bl_wheel_speed_sig.value_ref());
+      // Serial.print(", br: "); Serial.println(br_wheel_speed_sig.value_ref());
     #endif
   }
 }

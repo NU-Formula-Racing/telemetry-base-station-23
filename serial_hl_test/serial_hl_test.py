@@ -16,10 +16,11 @@ print("Connected to Serialport")
 
 # Open CSV file and its writer
 csv_file = open("test_data.csv", "w")
-csv_out = csv_file.writer(csv_file)
+csv_out = csv.writer(csv_file)
 
 # Interrupt handler function (to close the file)
 def interrupt_handler(signum, frame):
+  print("\nClosing CSV...")
   csv_file.close()
   sys.exit(0)
 signal.signal(signal.SIGINT, interrupt_handler)
@@ -34,14 +35,17 @@ while True:
   data = port.readline().decode("ascii").strip('\n\r')
   
   # Parse into JSON
-  j = json.loads(data)
+  try:
+    j = json.loads(data)
+  except json.decoder.JSONDecodeError:
+    continue
   
   # # Display line (containing the full JSON) and a single JSON query
   # print(data)
   # print(j["fast"]["fl_wheel_speed"])
   
   # Console log to confirm reception
-  print("D")
+  # print("D")
   
   # Print the header first
   if not head_written:
@@ -63,9 +67,8 @@ while True:
   del j["fast"] # Get rid of the sensor data already parsed
   del j["slow"]
   data.extend(list(j.values()))
+  
+  print(data)
 
   # Write row
   csv_out.writerow(data)
-
-  # Close file and end program
-  csv_file.close()
