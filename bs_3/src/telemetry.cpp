@@ -341,9 +341,13 @@ void tx_send() {
       serialize(&data_id, &sensor_refs, buf, &buf_len);
 
       // Send data and verify completion
-      // delay(10);
-      rf95.send(buf, SENSOR_VALS_LEN); // buf_len);
-      // delay(10);
+      // if () {
+        rf95.send(buf, SENSOR_VALS_LEN);
+      // } else if () {
+      //   rf95.send(buf, SENSOR_VALS_LEN);
+      // } else {
+      //   rf95.send(buf, SENSOR_VALS_LEN);
+      // }
       rf95.waitPacketSent();
       
       // // Test: accuracy
