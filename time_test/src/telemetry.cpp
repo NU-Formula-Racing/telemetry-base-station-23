@@ -204,8 +204,8 @@ void tx_task() {
       }
 
       // Send data
-      uint8_t packet_len = buf_lens[(size_t) switchback];
-      rf95.send(packet, packet_len);
+      // uint8_t packet_len = buf_lens[(size_t) switchback];
+      rf95.send(packet, 4 + 124 * ((uint8_t) switchback));
       rf95.waitPacketSent();
 
       // Test: print data to Serial

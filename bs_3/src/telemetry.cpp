@@ -44,11 +44,9 @@ message_code_t data_id = 0;
 uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 
 // Buffer length
+// RX only for global scope, as it is always reset when recomputing per loop
 #ifdef TELEMETRY_BASE_STATION_TX
   size_t buf_len = RH_RF95_MAX_MESSAGE_LEN;
-#endif
-#ifdef TELEMETRY_BASE_STATION_RX
-  uint8_t buf_len = RH_RF95_MAX_MESSAGE_LEN;
 #endif
 
 /********** CAN VARIABLES **********/
@@ -337,20 +335,19 @@ void tx_send() {
       // From the flags, transcribe them into a singular code, then reset flags
       get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
       
-      // // Serialize the data
-      serialize(&data_id, &sensor_refs, buf, &buf_len);
+      // Serialize the data
+      if (data_id) { // Signals there are signals to be sent
+        serialize(&data_id, &sensor_refs, buf, &buf_len);
 
-      // Send data and verify completion
-      // if () {
-        rf95.send(buf, SENSOR_VALS_LEN);
-      // } else if () {
-      //   rf95.send(buf, SENSOR_VALS_LEN);
-      // } else {
-      //   rf95.send(buf, SENSOR_VALS_LEN);
-      // }
-      rf95.waitPacketSent();
+        // Send data and verify completion
+        rf95.send(buf, buf_len);
+        rf95.waitPacketSent();
+      }
       
-      // // Test: accuracy
+      // Test: check length
+      // Serial.println(buf_len);
+
+      // Test: accuracy
       // Serial.print("fl: "); Serial.print(fl_wheel_speed_sig.value_ref());
       // Serial.print(", fr: "); Serial.print(fr_wheel_speed_sig.value_ref());
       // Serial.print(", bl: "); Serial.print(bl_wheel_speed_sig.value_ref());
@@ -367,12 +364,18 @@ void tx_send() {
  */
 void rx_task() {
   if (rf95.available() && (rfm95_init_successful == true)) {
+
+    // Buffer length
+    // Must be local in TX to initialize per loop
+    uint8_t buf_len = RH_RF95_MAX_MESSAGE_LEN;
+
     #ifdef TELEMETRY_BASE_STATION_RX
       // Check if a message has been received, and retrieve its data and length
       if (rf95.recv(buf, &buf_len)) {
         // // Receive successful
         // RH_RF95::printBuffer("Received ", buf, buf_len);
         // Serial.print("Got: "); Serial.println((char*) buf);
+        // Serial.println(buf_len);
 
         // sensor_vals_ptr = (uint8_t*) &(sensor_vals.fast.rtc);
         // buf_ptr = buf;

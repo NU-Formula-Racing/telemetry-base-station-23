@@ -66,10 +66,10 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
       sensor_data_bytes = *((uint8_t**) sensor_data_ptr);
       for (j = 0; j < fast_sensors_size[i]; ++j) {
         *(buf_ptr++) = *(sensor_data_bytes++);
-        ++*buf_len;
       }
       sensor_data_ptr += SENSOR_PTR_LEN;
     }
+    *buf_len += FAST_SENSORS_LEN;
   }
 
   // if (*mc & 0b10) {
@@ -78,10 +78,10 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
   //     sensor_data_bytes = *((uint8_t**) sensor_data_ptr);
   //     for (j = 0; j < med_sensors_size[i]; ++j) {
   //       *(buf_ptr++) = *(sensor_data_bytes++);
-  //       ++*buf_len;
   //     }
   //     sensor_data_ptr += SENSOR_PTR_LEN;
   //   }
+  //   *buf_len += MED_SENSORS_LEN;
   // }
 
   if (*mc & 0b100) {
@@ -90,10 +90,10 @@ void serialize(message_code_t* mc, sensor_refs_t* sensor_refs, uint8_t* data_buf
       sensor_data_bytes = *((uint8_t**) sensor_data_ptr);
       for (j = 0; j < slow_sensors_size[i]; ++j) {
         *(buf_ptr++) = *(sensor_data_bytes++);
-        ++*buf_len;
       }
       sensor_data_ptr += SENSOR_PTR_LEN;
     }
+    *buf_len += SLOW_SENSORS_LEN;
   }
 
   // Conditional sensors

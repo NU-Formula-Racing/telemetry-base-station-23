@@ -135,6 +135,13 @@ Their description and results are described below:
 
 -  The RX simply receives the buffer and prints it, and its length. Its reception rate is at 1 ms.
 
+-  3 variations of this test were conducted:
+
+   - Directly indexing between addresses with the short and long byte length, stored in an array
+   - Updating a variable to one of these index values, and using that variable
+   - Updating a variable to (short length) + (long - short length) * (switch), i.e. not using the buffer
+   - Directly setting the buffer length to the above expression (without a variable)
+
 -  Results confirmed that RadioHead does support a variable buffer sizes, contradicting previous test results. This could suggest
    that previous tests had bugs in their code that prevented them from properly reading a buffer size. Previous tests used a
    variable that changed based on the desired size, while this test used elements from an array. Thus, it is possible that the

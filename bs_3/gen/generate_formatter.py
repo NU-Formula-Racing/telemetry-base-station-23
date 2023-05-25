@@ -5,6 +5,8 @@
 # Date: 2023-02-08
 # Copyright (c) 2023
 
+### OBSOLETE AS OF 25 MAY 2023; DO NOT RUN
+
 # This is not a pure Python file, but a build script used by PIO.
 # Any errors that the Python environment raises can be reasonably ignored 
 # if otherwise allowed by PIO documentation.
