@@ -24,7 +24,7 @@
  * Only uncomment ONE or undef stuff may happen!!!
  */
 
-// #define TELEMETRY_BASE_STATION_TX
-#define TELEMETRY_BASE_STATION_RX
+#define TELEMETRY_BASE_STATION_TX
+// #define TELEMETRY_BASE_STATION_RX
 
 #endif

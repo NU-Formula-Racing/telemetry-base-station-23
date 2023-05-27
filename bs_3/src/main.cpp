@@ -27,9 +27,9 @@ void setup() {
   // Add tasks to timer
   #ifdef TELEMETRY_BASE_STATION_TX
     // Serial.println("CAN-LoRa test: TX");
-    timer_group.AddTimer(T_DS, tx_tick_fast);
+    timer_group.AddTimer(T_CS, tx_tick_fast);
     timer_group.AddTimer(T_SEC, tx_tick_slow);
-    timer_group.AddTimer(T_CS, tx_send);
+    timer_group.AddTimer(T_MS, tx_send);
 
     // timer_group.AddTimer(1U, tx_task);
   #endif

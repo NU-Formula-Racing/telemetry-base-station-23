@@ -215,7 +215,7 @@ bool telemetry_setup() {
       // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
       // Increase the bandwidth at the cost of range. Needs to be tested
-      rf95.setSignalBandwidth(250000);
+      // rf95.setSignalBandwidth(250000);
 
       // The default transmitter power is 13dBm, using PA_BOOST.
       // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
@@ -330,7 +330,8 @@ void tx_tick_slow() {
  * 
  */
 void tx_send() {
-  if (rfm95_init_successful == true) {
+  // Exit and update sensors if LoRa is still transmitting
+  if ((rf95.mode() != RHGenericDriver::RHMode::RHModeTx) && (rfm95_init_successful == true)) {
     #ifdef TELEMETRY_BASE_STATION_TX
       // From the flags, transcribe them into a singular code, then reset flags
       get_msg_code(&data_id, &fast_flag, &slow_flag, &cond_flag);
@@ -341,7 +342,7 @@ void tx_send() {
 
         // Send data and verify completion
         rf95.send(buf, buf_len);
-        rf95.waitPacketSent();
+        // rf95.waitPacketSent();
       }
       
       // Test: check length
@@ -352,6 +353,13 @@ void tx_send() {
       // Serial.print(", fr: "); Serial.print(fr_wheel_speed_sig.value_ref());
       // Serial.print(", bl: "); Serial.print(bl_wheel_speed_sig.value_ref());
       // Serial.print(", br: "); Serial.println(br_wheel_speed_sig.value_ref());
+
+      Serial.print("a: "); Serial.print(accel_x_sig.value_ref());
+      Serial.print(", "); Serial.print(accel_y_sig.value_ref());
+      Serial.print(", "); Serial.print(accel_z_sig.value_ref());
+      Serial.print(", g: "); Serial.print(gyro_x_sig.value_ref());
+      Serial.print(", "); Serial.print(gyro_y_sig.value_ref());
+      Serial.print(", "); Serial.println(gyro_z_sig.value_ref());
     #endif
   }
 }
@@ -364,12 +372,11 @@ void tx_send() {
  */
 void rx_task() {
   if (rf95.available() && (rfm95_init_successful == true)) {
-
-    // Buffer length
-    // Must be local in TX to initialize per loop
-    uint8_t buf_len = RH_RF95_MAX_MESSAGE_LEN;
-
     #ifdef TELEMETRY_BASE_STATION_RX
+      // Buffer length
+      // Must be local in TX to initialize per loop
+      uint8_t buf_len = RH_RF95_MAX_MESSAGE_LEN;
+
       // Check if a message has been received, and retrieve its data and length
       if (rf95.recv(buf, &buf_len)) {
         // // Receive successful
