@@ -340,8 +340,11 @@ void tx_send() {
       if (data_id) { // Signals there are signals to be sent
         serialize(&data_id, &sensor_refs, buf, &buf_len);
 
-        // Send data and verify completion
+        // Send data
         rf95.send(buf, buf_len);
+
+        // Do not "verify completion," as it blocks the entire program
+        // and causes CAN messages to lag
         // rf95.waitPacketSent();
       }
       
@@ -354,12 +357,12 @@ void tx_send() {
       // Serial.print(", bl: "); Serial.print(bl_wheel_speed_sig.value_ref());
       // Serial.print(", br: "); Serial.println(br_wheel_speed_sig.value_ref());
 
-      Serial.print("a: "); Serial.print(accel_x_sig.value_ref());
-      Serial.print(", "); Serial.print(accel_y_sig.value_ref());
-      Serial.print(", "); Serial.print(accel_z_sig.value_ref());
-      Serial.print(", g: "); Serial.print(gyro_x_sig.value_ref());
-      Serial.print(", "); Serial.print(gyro_y_sig.value_ref());
-      Serial.print(", "); Serial.println(gyro_z_sig.value_ref());
+      // Serial.print("a: "); Serial.print(accel_x_sig.value_ref());
+      // Serial.print(", "); Serial.print(accel_y_sig.value_ref());
+      // Serial.print(", "); Serial.print(accel_z_sig.value_ref());
+      // Serial.print(", g: "); Serial.print(gyro_x_sig.value_ref());
+      // Serial.print(", "); Serial.print(gyro_y_sig.value_ref());
+      // Serial.print(", "); Serial.println(gyro_z_sig.value_ref());
     #endif
   }
 }

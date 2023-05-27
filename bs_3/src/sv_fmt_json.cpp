@@ -2,7 +2,7 @@
 
 void sv_fmt_json(message_code_t* mc, sensor_vals_t* sv) {
   if (*mc & 0b1) {
-    Serial.print("{\"fast\":{\"fl_wheel_speed\":"); Serial.print(sv->fast.fl_wheel_speed);
+    Serial.print("{\"fl_wheel_speed\":"); Serial.print(sv->fast.fl_wheel_speed);
     Serial.print(",\"fr_wheel_speed\":"); Serial.print(sv->fast.fr_wheel_speed);
     Serial.print(",\"bl_wheel_speed\":"); Serial.print(sv->fast.bl_wheel_speed);
     Serial.print(",\"br_wheel_speed\":"); Serial.print(sv->fast.br_wheel_speed);
@@ -30,9 +30,9 @@ void sv_fmt_json(message_code_t* mc, sensor_vals_t* sv) {
   }
   if (*mc & 0b100) {
     if (*mc & 0b1) {
-      Serial.print("},\"slow\":{\"coolant_temperature\":");
+      Serial.print(",\"coolant_temperature\":");
     } else {
-      Serial.print("{\"slow\":{\"coolant_temperature\":");
+      Serial.print("{\"coolant_temperature\":");
     } 
     Serial.print(sv->slow.coolant_temperature);
     Serial.print(",\"fl_brake_temperature\":"); Serial.print(sv->slow.fl_brake_temperature);
@@ -44,5 +44,5 @@ void sv_fmt_json(message_code_t* mc, sensor_vals_t* sv) {
     Serial.print(",\"coolant_flow\":"); Serial.print(sv->slow.coolant_flow);
     Serial.print(",\"hv_state_of_charge\":"); Serial.print(sv->slow.hv_state_of_charge);
   }
-  Serial.println("}}");
+  Serial.println("}");
 }
