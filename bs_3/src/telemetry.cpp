@@ -214,8 +214,8 @@ bool telemetry_setup() {
     if (rf95.setFrequency(RF95_FREQ) == true) {
       // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
-      // Increase the bandwidth at the cost of range. Needs to be tested
-      // rf95.setSignalBandwidth(250000);
+      // Decrease coding ratio (add extra redundancies)
+      rf95.setCodingRate4(6);
 
       // The default transmitter power is 13dBm, using PA_BOOST.
       // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
